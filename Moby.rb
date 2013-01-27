@@ -11,7 +11,7 @@ class Context
   def Context.finalize
     code = "def this;self end\n"
     @@roles.each do |role, methods|
-      code += "@#{role}\nattr_reader :#{role}\n"
+      code += "@#{role}\ndef #{role};@#{role};end\nprivate :#{role}\n" #never used but class_eval will complain if not declared
       methods.each do |method_name, method_source|
         name = "self_#{role}_#{method_name}"
         source = lambda2method(name, method_source)
@@ -21,9 +21,8 @@ class Context
     @@interactions.each do |name, method_source|
       code += lambda2method name, method_source
     end
-    File.open("generate.rb", 'w') { |f| f.write(code) }
+    #File.open("generate.rb", 'w') { |f| f.write(code) }
     class_eval(code)
-
   end
 
   def self.lambda2method (method_name, method_source)
@@ -46,7 +45,7 @@ class Context
           method_name = exp[2]
           role = role_method_call exp[1], exp[2]
           if exp[0] == :call && role
-            exp[1] = nil
+            exp[1] = nil #remove call to attribute
             exp[2] = "self_#{role}_#{method_name}".to_sym
           elsif exp.instance_of? Sexp
             transform_ast exp
@@ -57,8 +56,11 @@ class Context
   end
 
   def Context.role_method_call(ast, method)
-    is_role = ast && ast[0] == :call && ((!ast[1] || ast[1] == :self) && @@roles.has_key?(ast[2]))
-    ast[2] if is_role && @@roles[ast[2]].has_key?(method)
+    is_call_expression = ast && ast[0] == :call
+    self_is_instance_expression = is_call_expression && (!ast[1] || ast[1] == :self) #implicit or explicit self
+    is_role = self_is_instance_expression && (role = @@roles[ast[2]]) #is it a call to a role getter
+    is_role_method = is_role && role.has_key?(method)
+    ast[2] if is_role_method #return role name
   end
 
   def Context.block2method(method_name, post_code, b)
@@ -80,8 +82,7 @@ class Context
   end
 
   def self.block2source(b)
-    block = b
-    block.strip!
+    block = b.strip
     index = (block.index '|') + 1
     index = 0 if index < 0
     block = block[index..-1]
