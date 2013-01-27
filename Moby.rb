@@ -63,24 +63,6 @@ class Context
     ast[2] if is_role_method #return role name
   end
 
-  def Context.block2method(method_name, post_code, b)
-    name = method_name.to_s
-    code = "\r\n"
-    args = ""
-    if block_given?
-      args, block = block2source b
-      ast = (ast_eval "lambda {|#{args}| #{block}}", binding).to_ast
-      transform_ast ast
-      args, block = block2source LiveAST.parser::Unparser.unparse(ast)
-    else
-      block = ""
-    end
-
-    code += "\r\ndef #{name} #{args} \r\n#{block}\r\n end\r\n"
-    code += post_code.join("#{args}")
-    code
-  end
-
   def self.block2source(b)
     block = b.strip
     index = (block.index '|') + 1
