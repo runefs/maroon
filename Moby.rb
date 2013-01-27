@@ -13,21 +13,24 @@ class Context
     @@roles.each do |role, methods|
       code += "@#{role}\nattr_reader :#{role}\n"
       methods.each do |method_name, method_source|
-        ast = (ast_eval method_source, binding).to_ast
-        transform_ast ast
-        args, block = block2source LiveAST.parser::Unparser.unparse(ast)
-        name = "self_#{role}_#{method_name}";
-        code += "\ndef #{name} (#{args}) \n#{block}\n end\nprivate :#{name}\n"
+        name = "self_#{role}_#{method_name}"
+        source = lambda2method(name, method_source)
+        code += "#{source}\nprivate :#{name}\n"
       end
     end
     @@interactions.each do |name, method_source|
-      ast = (ast_eval method_source, binding).to_ast
-      transform_ast ast
-      args, block = block2source LiveAST.parser::Unparser.unparse(ast)
-      code += "\ndef #{name} #{args} \n#{block}\n end\n"
+      code += lambda2method name, method_source
     end
-    class_eval(code)
     File.open("generate.rb", 'w') { |f| f.write(code) }
+    class_eval(code)
+
+  end
+
+  def self.lambda2method (method_name, method_source)
+    ast = (ast_eval method_source, binding).to_ast
+    transform_ast ast
+    args, block = block2source LiveAST.parser::Unparser.unparse(ast)
+    "\ndef #{method_name} #{args} \n#{block}\n end\n"
   end
 
   def Context.role(role_name)

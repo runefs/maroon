@@ -1,3 +1,5 @@
+require '../Moby'
+
 class MoneyTransfer < Context
   role :source do
     role_method :withdraw do |amount|
@@ -29,10 +31,9 @@ class MoneyTransfer < Context
 end
 
 class Account
-  def initialize (amount, id, run_type)
+  def initialize (amount, id)
     @balance = amount
     @account_id = id
-    @run_type = run_type
   end
 
   def movement(amount)
@@ -41,7 +42,7 @@ class Account
   end
 
   def log(message)
-    (p s = "instance #{message}") if @run_type == :normal
+    (p s = "instance #{message}")
   end
 
   def to_s
@@ -49,6 +50,6 @@ class Account
   end
 end
 
-account = Account.new 1000, "source", run_type
+account = Account.new 1000, "source"
 ctx = MoneyTransfer.new account, account
 ctx.transfer 100
