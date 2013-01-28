@@ -46,7 +46,7 @@ class Context
 
     code << "#{interactions}\n#{fields}\n#{initializer_head[0..-2]})\n#{initializer}  end\n  private\n#{getters}\n#{impl}\n"
 
-    File.open("generate.rb", 'w') { |f| f.write(code) }
+    #File.open("generate.rb", 'w') { |f| f.write(code) }
     c.class_eval(code)
   end
 

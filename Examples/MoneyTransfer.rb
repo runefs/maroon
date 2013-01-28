@@ -18,7 +18,7 @@ Context::define :MoneyTransfer do
     end
   end
 
-  role_or_interaction_method :transfer do |amount|
+  transfer do |amount|
     source.withdraw -amount
     destination.deposit amount
   end
