@@ -3,42 +3,88 @@ require 'live_ast/to_ruby'
 
 class Context
   #meta programming
-  @@roles = Hash.new
-  @@interactions = Hash.new
-  @@defining_role
+  @roles
+  @interactions
+  @defining_role
   #meta end
 
-  def Context.finalize
-    code = "def this;self end\n"
-    @@roles.each do |role, methods|
-      code += "@#{role}\ndef #{role};@#{role};end\nprivate :#{role}\n" #never used but class_eval will complain if not declared
-      methods.each do |method_name, method_source|
-        name = "self_#{role}_#{method_name}"
-        source = lambda2method(name, method_source)
-        code += "#{source}\nprivate :#{name}\n"
-      end
-    end
-    @@interactions.each do |name, method_source|
-      code += lambda2method name, method_source
-    end
-    #File.open("generate.rb", 'w') { |f| f.write(code) }
-    class_eval(code)
+  def initialize
+    @roles = Hash.new
+    @interactions = Hash.new
   end
 
-  def self.lambda2method (method_name, method_source)
+  def self.define(name, &block)
+    ctx = Context.new
+    ctx.instance_eval &block
+    ctx.finalize name
+  end
+
+  def finalize(name)
+    c = Class.new
+    Kernel.const_set name, c
+    code = ""
+    fields = ""
+    getters = ""
+    impl = ""
+    initializer = ""
+    initializer_head = "  def initialize ( "
+    interactions = ""
+    @interactions.each do |method_name, method_source|
+      interactions << "  #{lambda2method(method_name, method_source)}"
+    end
+    @roles.each do |role, methods|
+      fields << "@#{role}\n"
+      getters << "def #{role};@#{role} end\n"
+      initializer << "    @#{role} = #{role}\n"
+      initializer_head << "#{role},"
+      methods.each do |method_name, method_source|
+        name = "self_#{role}_#{method_name}"
+        definition = lambda2method name, method_source
+        impl << "  #{definition}" if definition
+      end
+    end
+
+    code << "#{interactions}\n#{fields}\n#{initializer_head[0..-2]})\n#{initializer}  end\n  private\n#{getters}\n#{impl}\n"
+
+    File.open("generate.rb", 'w') { |f| f.write(code) }
+    c.class_eval(code)
+  end
+
+  def role(role_name)
+    @defining_role = role_name
+    @roles[role_name] = Hash.new
+    yield if block_given?
+    @defining_role = nil
+  end
+
+  def methods
+    (@defining_role ? @roles[@defining_role] : @interactions)
+  end
+
+  def role_or_interaction_method(method_name, &b)
+    args, block = block2source b.to_ruby
+    source = "lambda {|#{args}| #{block}}"
+    methods[method_name] = source
+  end
+
+  alias method_missing role_or_interaction_method
+
+  def role_method_call(ast, method)
+    is_call_expression = ast && ast[0] == :call
+    self_is_instance_expression = is_call_expression && (!ast[1] || ast[1] == :self) #implicit or explicit self
+    role = self_is_instance_expression ? @roles[ast[2]] : nil #is it a call to a role getter
+    is_role_method = role && role.has_key?(method)
+    ast[2] if is_role_method #return role name
+  end
+
+  def lambda2method (method_name, method_source)
     ast = (ast_eval method_source, binding).to_ast
     transform_ast ast
     args, block = block2source LiveAST.parser::Unparser.unparse(ast)
-    "\ndef #{method_name} #{args} \n#{block}\n end\n"
+    "\n  def #{method_name} (#{args})#{block}  end\n"
   end
 
-  def Context.role(role_name)
-    @@defining_role = role_name
-    (@@roles ||= Hash.new)[role_name] = Hash.new
-    yield if block_given?
-  end
-
-  def Context.transform_ast(ast)
+  def transform_ast(ast)
     if ast
       ast.each do |exp|
         if exp
@@ -55,15 +101,7 @@ class Context
     end
   end
 
-  def Context.role_method_call(ast, method)
-    is_call_expression = ast && ast[0] == :call
-    self_is_instance_expression = is_call_expression && (!ast[1] || ast[1] == :self) #implicit or explicit self
-    is_role = self_is_instance_expression && (role = @@roles[ast[2]]) #is it a call to a role getter
-    is_role_method = is_role && role.has_key?(method)
-    ast[2] if is_role_method #return role name
-  end
-
-  def self.block2source(b)
+  def block2source(b)
     block = b.strip
     index = (block.index '|') + 1
     index = 0 if index < 0
@@ -77,15 +115,5 @@ class Context
       block = block[(index+2)..-2]
     end
     return args, block
-  end
-
-  def Context.role_method(method_name, &b)
-    args, block = block2source b.to_ruby
-    @@roles[@@defining_role][method_name] = "lambda {|#{args}| #{block}}"
-  end
-
-  def Context.interaction(method_name, &b)
-    args, block = block2source b.to_ruby
-    (@@interactions ||= Hash.new)[method_name] = "lambda {|#{args}| #{block}}"
   end
 end

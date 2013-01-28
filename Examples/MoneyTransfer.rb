@@ -1,28 +1,27 @@
 require '../Moby'
 
-class MoneyTransfer < Context
+Context::define :MoneyTransfer do
   role :source do
-    role_method :withdraw do |amount|
+    withdraw do |amount|
       source.movement(amount)
       source.log "withdrawal #{amount}"
     end
-    role_method :log do |message|
+    log do |message|
       p "role #{message}"
     end
   end
 
   role :destination do
-    role_method :deposit do |amount|
+    deposit do |amount|
       @destination.movement(amount)
       @destination.log "deposit #{amount}"
     end
   end
 
-  interaction :transfer do |amount|
+  role_or_interaction_method :transfer do |amount|
     source.withdraw -amount
     destination.deposit amount
   end
-  Context.finalize()
 
   def initialize(source, destination)
     @source = source
