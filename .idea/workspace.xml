@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" name="Default" comment="" />
+    <list default="true" id="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" name="Default" comment="">
+      <change type="DELETED" beforePath="D:\GitHub\Moby\Examples\CalculateShortestDistance_generate.rb" afterPath="" />
+      <change type="DELETED" beforePath="D:\GitHub\Moby\Examples\CalculateShortestPath_generate.rb" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Examples/MoneyTransfer.rb" afterPath="$PROJECT_DIR$/Examples/MoneyTransfer.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Examples/MoneyTransfer_generate.rb" afterPath="$PROJECT_DIR$/Examples/MoneyTransfer_generate.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="D:\GitHub\Moby\Examples\generate.rb" afterPath="D:\GitHub\Moby\Examples\generate.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+    </list>
     <ignored path="Moby.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/.rakeTasks" />
@@ -22,7 +30,7 @@
     <file path="/Dummy.txt" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360586669102" ignored="false" />
     <file path="/Moby.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360497685029" ignored="false" />
     <file path="/fragment.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360584225574" ignored="false" />
-    <file path="/MoneyTransfer.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360498437347" ignored="false" />
+    <file path="/MoneyTransfer.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360588664041" ignored="false" />
     <file path="/MoneyTransfer_generate.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360319939435" ignored="false" />
     <file path="/dijkstra.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360583975524" ignored="false" />
     <file path="/calculate_shortest_path.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360583474105" ignored="false" />
@@ -32,6 +40,7 @@
     <file path="/CalculateShortestDistance.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360584556506" ignored="false" />
     <file path="/program.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360585558344" ignored="false" />
     <file path="/temp.rb" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360586505558" ignored="false" />
+    <file path="/README.md" changelist="7007648d-fbc0-4c56-a6f1-ddfaf5cf6813" time="1360588104597" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +56,35 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="MoneyTransfer.rb" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Examples/MoneyTransfer.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="44" selection-start="201" selection-end="201" vertical-scroll-proportion="0.26824456">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dijkstra.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Examples/Dijkstra/dijkstra.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1" column="16" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Moby.rb" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/Moby.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="92" column="6" selection-start="2104" selection-end="2106" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -72,7 +109,6 @@
         <option value="$PROJECT_DIR$/Examples/Dijkstra/ShortestPath.rb" />
         <option value="$PROJECT_DIR$/Examples/CalculateShortestDistance_generate.rb" />
         <option value="$PROJECT_DIR$/Examples/MoneyTransfer_generate.rb" />
-        <option value="$PROJECT_DIR$/Examples/MoneyTransfer.rb" />
         <option value="$PROJECT_DIR$/Examples/Dijkstra/specific_geometry.rb" />
         <option value="$PROJECT_DIR$/lib/Moby.rb" />
         <option value="$PROJECT_DIR$/Examples/Dijkstra/calculate_shortest_path.rb" />
@@ -81,6 +117,8 @@
         <option value="$PROJECT_DIR$/Examples/Dijkstra/program.rb" />
         <option value="$PROJECT_DIR$/Examples/Dijkstra/di.rb" />
         <option value="$PROJECT_DIR$/Examples/Dijkstra/data.rb" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/Examples/MoneyTransfer.rb" />
       </list>
     </option>
   </component>
@@ -154,6 +192,52 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lib" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lib" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Moby" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
     </panes>
@@ -171,7 +255,7 @@
       <recent name="D:\GitHub\Moby\lib" />
     </key>
   </component>
-  <component name="RunManager" selected="Ruby.Dijkstra">
+  <component name="RunManager" selected="Ruby.MoneyTransfer">
     <configuration default="false" name="MoneyTransfer" type="RubyRunConfigurationType" factoryName="Ruby" temporary="true">
       <module name="Moby" />
       <RUBY_RUN_CONFIG NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift)" />
@@ -305,16 +389,16 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1552" height="931" extended-state="7" />
+    <frame x="-8" y="-8" width="1552" height="931" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3299748" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32871535" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32871535" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32871535" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21208054" sideWeight="0.6712846" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21208054" sideWeight="0.6712846" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39698493" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24966443" sideWeight="0.67462313" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -387,7 +471,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/Examples/MoneyTransfer.rb</url>
-          <line>183</line>
+          <line>6</line>
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/lib/Moby.rb</url>
@@ -452,34 +536,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Examples/CalculateShortestPath_generate.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="32" selection-start="2451" selection-end="2451" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Examples/CalculateShortestDistance_generate.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Examples/MoneyTransfer_generate.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="0" selection-start="2116" selection-end="2116" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Examples/MoneyTransfer.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="146" column="10" selection-start="4928" selection-end="4932" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://D:/Ruby193/lib/ruby/site_ruby/1.9.1/rubygems/custom_require.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="35" column="0" selection-start="1040" selection-end="1040" vertical-scroll-proportion="0.33265308">
@@ -503,13 +559,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Examples/Dijkstra/dijkstra.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="11" selection-start="2786" selection-end="2786" vertical-scroll-proportion="0.3944773">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Examples/Dijkstra/CalculateShortestDistance.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="9" column="59" selection-start="176" selection-end="176" vertical-scroll-proportion="-1.0453649">
@@ -517,9 +566,37 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="73" selection-start="508" selection-end="508" vertical-scroll-proportion="0.32938856">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/Moby.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="92" column="6" selection-start="2104" selection-end="2106" vertical-scroll-proportion="0.31982943">
+        <state line="92" column="6" selection-start="2104" selection-end="2106" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Examples/MoneyTransfer_generate.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="34" column="7" selection-start="612" selection-end="612" vertical-scroll-proportion="0.8333333">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Examples/Dijkstra/dijkstra.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="16" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Examples/MoneyTransfer.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="44" selection-start="201" selection-end="201" vertical-scroll-proportion="0.26824456">
           <folding />
         </state>
       </provider>
