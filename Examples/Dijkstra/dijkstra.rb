@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
-require '../Lib/Moby.rb'
-require './Dijkstra/data.rb'
-require './Dijkstra/CalculateShortestDistance.rb'
-require './Dijkstra/Calculate_Shortest_Path.rb'
+require '../../Lib/Moby.rb'
+require './data.rb'
+require './CalculateShortestDistance.rb'
+require './Calculate_Shortest_Path.rb'
 #!/usr/bin/env ruby
 # Example in Ruby -- Dijkstra's algorithm in DCI
 #    Modified and simplified for a Manhattan geometry with 8 roles
@@ -64,26 +64,22 @@ require './Dijkstra/Calculate_Shortest_Path.rb'
 
 geometries = Geometry_1.new
 path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
-print "Path is: "
-path.each {
-    |node|
-  print "#{node.name} "
-};
+print 'Path is: '
+path.each { |node| print "#{node.name} " }
 print "\n"
 puts "distance is #{CalculateShortestDistance.new(geometries.root, geometries).distance}"
 
-puts("")
+puts ''
 
 geometries = ManhattanGeometry2.new
 path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
-print "Path is: "
+print 'Path is: '
 last_node = nil
-path.each {
-    |node|
+path.each do |node|
   if last_node != nil; print " - #{geometries.distances[Edge.new(node, last_node)]} - " end
   print "#{node.name}"
   last_node = node
-};
+end
 print "\n"
 
 geometries = ManhattanGeometry2.new
