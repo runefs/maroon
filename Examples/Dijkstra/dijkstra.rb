@@ -62,7 +62,7 @@ require './Dijkstra/Calculate_Shortest_Path.rb'
 #
 
 
-geometries = ManhattanGeometry1.new
+geometries = Geometry_1.new
 path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
 print "Path is: "
 path.each {

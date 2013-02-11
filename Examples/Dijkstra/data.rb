@@ -36,7 +36,9 @@ end
 #
 # --- Here are some test data
 #
-class ManhattanGeometry1 < ManhattanGeometry
+
+#noinspection RubyTooManyInstanceVariablesInspection
+class Geometry_1 < ManhattanGeometry
   def initialize
     super()
 
@@ -64,15 +66,15 @@ class ManhattanGeometry1 < ManhattanGeometry
     #
 
 
-    @a = nodes[0]
-    @b = nodes[1]
-    @c = nodes[2]
-    @d = nodes[3]
-    @e = nodes[4]
-    @f = nodes[5]
-    @g = nodes[6]
-    @h = nodes[7]
-    @i = nodes[8]
+    @node_a = nodes[0]
+    @node_b = nodes[1]
+    @node_c = nodes[2]
+    @node_d = nodes[3]
+    @node_e = nodes[4]
+    @node_f = nodes[5]
+    @node_g = nodes[6]
+    @node_h = nodes[7]
+    @node_i = nodes[8]
 
     9.times { |i|
       9.times { |j|
@@ -80,46 +82,47 @@ class ManhattanGeometry1 < ManhattanGeometry
       }
     }
 
-    distances[Edge.new(@a, @b)] = 2
-    distances[Edge.new(@b, @c)] = 3
-    distances[Edge.new(@c, @f)] = 1
-    distances[Edge.new(@f, @i)] = 4
-    distances[Edge.new(@b, @e)] = 2
-    distances[Edge.new(@e, @f)] = 1
-    distances[Edge.new(@a, @d)] = 1
-    distances[Edge.new(@d, @g)] = 2
-    distances[Edge.new(@g, @h)] = 1
-    distances[Edge.new(@h, @i)] = 2
-    distances[Edge.new(@d, @e)] = 1
+    distances[Edge.new(@node_a, @node_b)] = 2
+    distances[Edge.new(@node_b, @node_c)] = 3
+    distances[Edge.new(@node_c, @node_f)] = 1
+    distances[Edge.new(@node_f, @node_i)] = 4
+    distances[Edge.new(@node_b, @node_e)] = 2
+    distances[Edge.new(@node_e, @node_f)] = 1
+    distances[Edge.new(@node_a, @node_d)] = 1
+    distances[Edge.new(@node_d, @node_g)] = 2
+    distances[Edge.new(@node_g, @node_h)] = 1
+    distances[Edge.new(@node_h, @node_i)] = 2
+    distances[Edge.new(@node_d, @node_e)] = 1
     distances.freeze
 
 
     @next_down_the_street_from = Hash.new
-    @next_down_the_street_from[@a] = @b
-    @next_down_the_street_from[@b] = @c
-    @next_down_the_street_from[@d] = @e
-    @next_down_the_street_from[@e] = @f
-    @next_down_the_street_from[@g] = @h
-    @next_down_the_street_from[@h] = @i
+    @next_down_the_street_from[@node_a] = @node_b
+    @next_down_the_street_from[@node_b] = @node_c
+    @next_down_the_street_from[@node_d] = @node_e
+    @next_down_the_street_from[@node_e] = @node_f
+    @next_down_the_street_from[@node_g] = @node_h
+    @next_down_the_street_from[@node_h] = @node_i
     @next_down_the_street_from.freeze
 
     @next_along_the_avenue_from = Hash.new
-    @next_along_the_avenue_from[@a] = @d
-    @next_along_the_avenue_from[@b] = @e
-    @next_along_the_avenue_from[@c] = @f
-    @next_along_the_avenue_from[@d] = @g
-    @next_along_the_avenue_from[@f] = @i
+    @next_along_the_avenue_from[@node_a] = @node_d
+    @next_along_the_avenue_from[@node_b] = @node_e
+    @next_along_the_avenue_from[@node_c] = @node_f
+    @next_along_the_avenue_from[@node_d] = @node_g
+    @next_along_the_avenue_from[@node_f] = @node_i
     @next_along_the_avenue_from.freeze
   end
 
   def east_neighbor_of(a); @next_down_the_street_from[a] end
   def south_neighbor_of(a); @next_along_the_avenue_from[a] end
 
-  def root;  @a end
-  def destination;  @i end
+  def root;  @node_a end
+  def destination;  @node_i end
 end
 
 
+#noinspection RubyTooManyInstanceVariablesInspection
 class ManhattanGeometry2 < ManhattanGeometry
   def initialize
     super()
@@ -142,17 +145,17 @@ class ManhattanGeometry2 < ManhattanGeometry
 
 
     #
-    @a = nodes[0]
-    @b = nodes[1]
-    @c = nodes[2]
-    @d = nodes[3]
-    @e = nodes[4]
-    @f = nodes[5]
-    @g = nodes[6]
-    @h = nodes[7]
-    @i = nodes[8]
-    @j = nodes[9]
-    @k = nodes[10]
+    @node_a = nodes[0]
+    @node_b = nodes[1]
+    @node_c = nodes[2]
+    @node_d = nodes[3]
+    @node_e = nodes[4]
+    @node_f = nodes[5]
+    @node_g = nodes[6]
+    @node_h = nodes[7]
+    @node_i = nodes[8]
+    @node_j = nodes[9]
+    @node_k = nodes[10]
 
     11.times { |i|
       11.times { |j|
@@ -160,48 +163,48 @@ class ManhattanGeometry2 < ManhattanGeometry
       }
     }
 
-    distances[Edge.new(@a, @b)] = 2
-    distances[Edge.new(@b, @c)] = 3
-    distances[Edge.new(@c, @f)] = 1
-    distances[Edge.new(@f, @i)] = 4
-    distances[Edge.new(@b, @e)] = 2
-    distances[Edge.new(@e, @f)] = 1
-    distances[Edge.new(@a, @d)] = 1
-    distances[Edge.new(@d, @g)] = 2
-    distances[Edge.new(@g, @h)] = 1
-    distances[Edge.new(@h, @i)] = 2
-    distances[Edge.new(@d, @e)] = 1
-    distances[Edge.new(@c, @j)] = 1
-    distances[Edge.new(@j, @k)] = 1
-    distances[Edge.new(@i, @k)] = 2
+    distances[Edge.new(@node_a, @node_b)] = 2
+    distances[Edge.new(@node_b, @node_c)] = 3
+    distances[Edge.new(@node_c, @node_f)] = 1
+    distances[Edge.new(@node_f, @node_i)] = 4
+    distances[Edge.new(@node_b, @node_e)] = 2
+    distances[Edge.new(@node_e, @node_f)] = 1
+    distances[Edge.new(@node_a, @node_d)] = 1
+    distances[Edge.new(@node_d, @node_g)] = 2
+    distances[Edge.new(@node_g, @node_h)] = 1
+    distances[Edge.new(@node_h, @node_i)] = 2
+    distances[Edge.new(@node_d, @node_e)] = 1
+    distances[Edge.new(@node_c, @node_j)] = 1
+    distances[Edge.new(@node_j, @node_k)] = 1
+    distances[Edge.new(@node_i, @node_k)] = 2
     distances.freeze
 
 
     @next_down_the_street_from = Hash.new
-    @next_down_the_street_from[@a] = @b
-    @next_down_the_street_from[@b] = @c
-    @next_down_the_street_from[@c] = @j
-    @next_down_the_street_from[@d] = @e
-    @next_down_the_street_from[@e] = @f
-    @next_down_the_street_from[@g] = @h
-    @next_down_the_street_from[@h] = @i
-    @next_down_the_street_from[@i] = @k
+    @next_down_the_street_from[@node_a] = @node_b
+    @next_down_the_street_from[@node_b] = @node_c
+    @next_down_the_street_from[@node_c] = @node_j
+    @next_down_the_street_from[@node_d] = @node_e
+    @next_down_the_street_from[@node_e] = @node_f
+    @next_down_the_street_from[@node_g] = @node_h
+    @next_down_the_street_from[@node_h] = @node_i
+    @next_down_the_street_from[@node_i] = @node_k
     @next_down_the_street_from.freeze
 
     @next_along_the_avenue_from = Hash.new
-    @next_along_the_avenue_from[@a] = @d
-    @next_along_the_avenue_from[@b] = @e
-    @next_along_the_avenue_from[@c] = @f
-    @next_along_the_avenue_from[@d] = @g
-    @next_along_the_avenue_from[@f] = @i
-    @next_along_the_avenue_from[@j] = @k
+    @next_along_the_avenue_from[@node_a] = @node_d
+    @next_along_the_avenue_from[@node_b] = @node_e
+    @next_along_the_avenue_from[@node_c] = @node_f
+    @next_along_the_avenue_from[@node_d] = @node_g
+    @next_along_the_avenue_from[@node_f] = @node_i
+    @next_along_the_avenue_from[@node_j] = @node_k
     @next_along_the_avenue_from.freeze
   end
 
   def east_neighbor_of(a); @next_down_the_street_from[a] end
   def south_neighbor_of(a); @next_along_the_avenue_from[a] end
 
-  def root;  @a end
-  def destination;  @k end
+  def root;  @node_a end
+  def destination;  @node_k end
 end
 
