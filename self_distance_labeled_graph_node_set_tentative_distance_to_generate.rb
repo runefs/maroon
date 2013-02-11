@@ -1,3 +1,0 @@
-class #[name]
-code
-end
