@@ -1,31 +1,60 @@
+# -*- encoding: utf-8 -*-
 require 'live_ast'
 require 'live_ast/to_ruby'
 
+# The Context class is used to define a DCI context with roles and their role methods
+# to define a context call define with the name of the context (this name will become the name of the class that defines the context)
+# the name should be a symbol and since it's going to be used as a class name, use class naming conventions
+# follow the name with a block. With in this block you can define roles and interactions
+# and interaction is defined by write the name of the interaction (hello in the below example) followed by a block
+# the block will become the method body
+# a role can be defined much like a context. instead of calling the define method call the role method followed by the role name (as a symbol)
+# the role will be used for a private instance variable and the naming convention should match this
+# With in the block supplied to the role method you can define role methods the same way as you define interactions. See the method who
+# in the below example
+#    Context::define :Greeter do
+#        role :who do
+#          say do
+#            p @who
+#          end
+#        end
+#      greeting do
+#        p "Hello #{who.say}!"
+#      end
+#    end
+#
+#    class Greeter
+#      def initialize(player)
+#         #@who = player
+#      end
+#    end
+#
+#    Greeter.new('world').greeting #Will print "Hello world!"
+#Author:: Rune Funch Søltoft (funchsoltoft@gmail.com)
+#License:: Same as for Ruby
 class Context
-  #meta programming
   @roles
   @interactions
   @defining_role
-  @parent_role
   @role_alias
-  @temp
   @alias_list
-  #meta end
+  @cached_roles_and_alias_list
 
   def initialize
     @roles = Hash.new
     @interactions = Hash.new
-    @parent_role = Array.new
     @role_alias = Array.new
   end
+
 
   def self.define(name, &block)
     ctx = Context.new
     ctx.instance_eval &block
     ctx.finalize name
   end
+
   def add_alias (a,role_name)
-    @temp,@alias_list = nil
+    @cached_roles_and_alias_list,@alias_list = nil
     @role_alias.last()[a] = role_name
   end
   def role_aliases
@@ -39,16 +68,16 @@ class Context
     @alias_list
   end
   def roles
-    @temp if @temp
+    @cached_roles_and_alias_list if @cached_roles_and_alias_list
     @roles unless @role_alias and @role_alias.length
-    @temp = Hash.new
+    @cached_roles_and_alias_list = Hash.new
     @roles.each {|k,v|
-       @temp[k] = v
+       @cached_roles_and_alias_list[k] = v
     }
     role_aliases.each {|k,v|
-      @temp[k] = @roles[v]
+      @cached_roles_and_alias_list[k] = @roles[v]
     }
-    @temp
+    @cached_roles_and_alias_list
   end
   def finalize(name)
     c = Class.new
@@ -74,7 +103,7 @@ class Context
 
     code << "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
 
-    File.open("#{name}_generate.rb", 'w') { |f| f.write("class #{name}\r\n#{code}\r\nend") }
+    #File.open("#{name}_generate.rb", 'w') { |f| f.write("class #{name}\r\n#{code}\r\nend") }
     c.class_eval(code)
   end
 
@@ -90,14 +119,12 @@ class Context
   end
 
   def role_or_interaction_method(method_name, &b)
-    p "method with out block #{method_name}" unless b
+    raise "method with out block #{method_name}" unless b
 
     args, block = block2source b.to_ruby, method_name
     args = "|#{args}|" if args
     source = "(proc do #{args}\n #{block}\nend)"
     methods[method_name] = source
-  #rescue  StandardError => e
-  #  p "Blew up #{method_name} with the exception #{e}"
   end
 
   alias method_missing role_or_interaction_method
