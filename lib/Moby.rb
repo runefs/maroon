@@ -30,6 +30,8 @@ require 'live_ast/to_ruby'
 #    end
 #
 #    Greeter.new('world').greeting #Will print "Hello world!"
+#Moby is base on Marvin which was the first injectionless language for DCI
+#being injectionless there's no runtime extend or anything else impacting the performance. There' only regular method invocation even when using role methods
 #Author:: Rune Funch Søltoft (funchsoltoft@gmail.com)
 #License:: Same as for Ruby
 class Context
