@@ -1,13 +1,17 @@
 require '../lib/Moby.rb'
+require '../lib/Moby/kernel.rb'
 
-Context::define :Greeter do
+context :Greeter do
   role :who do
     say do
-      @who
+      self
+    end
+    talk do
+      self.say
     end
   end
   greeting do
-    p "Hello #{who.say}!"
+    p "Hello #{who.talk}!"
   end
 end
 

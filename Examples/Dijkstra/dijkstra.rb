@@ -60,8 +60,6 @@ require './Calculate_Shortest_Path.rb'
 
 # --- Main Program: test driver
 #
-
-
 geometries = Geometry_1.new
 path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
 print 'Path is: '
