@@ -84,10 +84,6 @@ class Context
     @role_alias = Array.new
   end
 
-  def add_alias (a,role_name)
-    @cached_roles_and_alias_list,@alias_list = nil
-    @role_alias.last()[a] = role_name
-  end
   def role_aliases
     @alias_list if @alias_list
     @alias_list = Hash.new
@@ -98,6 +94,7 @@ class Context
     }
     @alias_list
   end
+
   def roles
     @cached_roles_and_alias_list if @cached_roles_and_alias_list
     @roles unless @role_alias and @role_alias.length
@@ -110,6 +107,16 @@ class Context
     }
     @cached_roles_and_alias_list
   end
+
+  def methods
+    (@defining_role ? @roles[@defining_role] : @interactions)
+  end
+
+  def add_alias (a,role_name)
+    @cached_roles_and_alias_list,@alias_list = nil
+    @role_alias.last()[a] = role_name
+  end
+
   def finalize(name)
     c = Class.new
     Kernel.const_set name, c
@@ -139,10 +146,6 @@ class Context
     complete = "class #{name}\r\n#{code}\r\nend"
     #File.open("#{name}_generate.rb", 'w') { |f| f.write(complete) }
     return c.class_eval(code),complete
-  end
-
-  def methods
-    (@defining_role ? @roles[@defining_role] : @interactions)
   end
 
   def role_or_interaction_method(method_name, &b)
@@ -177,6 +180,9 @@ class Context
     "\ndef #{method_name} #{args}\n#{block} end\n"
   end
 
+  ##
+  #Test if there's a block that needs to potentially be transformed
+  ##
   def transform_block(exp)
        if exp && exp[0] == :iter
            (exp.length-1).times do |i|
@@ -189,6 +195,9 @@ class Context
        end
   end
 
+  ##
+  #Calls rewrite_block if needed and will return true if the AST was changed otherwise false
+  ##
   def rewrite_bind?(block, expr)
     #check if the first call is a bind call
     if expr && expr.length && (expr[0] == :call && expr[1] == nil && expr[2] == :bind)
@@ -222,12 +231,16 @@ class Context
     false
   end
 
+  ##
+  #removes call to bind in a block
+  #and replaces it with assignment to the proper role player local variables
+  #in the end of the block the local variables have their original values reassigned
   def rewrite_bind(aliased_role, local, block)
     raise 'aliased_role must be a Symbol' unless aliased_role.instance_of? Symbol
     raise 'local must be a Symbol' unless local.instance_of? Symbol
     assignment = Sexp.new
     assignment[0] = :iasgn
-    assignment[1] = "@#{aliased_role}".to_sym
+    assignment[1] = aliased_role
     load_arg = Sexp.new
     load_arg[0] = :lvar
     load_arg[1] = local
@@ -241,14 +254,14 @@ class Context
     assignment[1] = temp_symbol
     load_field = Sexp.new
     load_field[0] = :ivar
-    load_field[1] = "@#{aliased_role}".to_sym
+    load_field[1] = aliased_role
     assignment[2] = load_field
     block.insert 1, assignment
 
     # reassign original player
     assignment = Sexp.new
     assignment[0] = :iasgn
-    assignment[1] = "@#{aliased_role}".to_sym
+    assignment[1] = aliased_role
     load_temp = Sexp.new
     load_temp[0] = :lvar
     load_temp[1] = temp_symbol
@@ -256,6 +269,10 @@ class Context
     block[block.length] = assignment
   end
 
+  # rewrites a call to self in a role method to a call to the role player accessor
+  # which is subsequently rewritten to a call to the instance variable itself
+  # in the case where no role method is called on the role player
+  # It's rewritten to an instance call on the context object if a role method is called
   def rewrite_self (ast)
     ast.length.times do |i|
       raise 'Invalid argument. must be an expression' unless ast.instance_of? Sexp
@@ -272,6 +289,9 @@ class Context
       end
     end
   end
+
+  #rewrites the ast so that role method calls are rewritten to a method invocation on the context object rather than the role player
+  #also does rewriting of binds in blocks
   def transform_ast(ast)
     if ast
       if @defining_role
@@ -301,7 +321,6 @@ class Context
 
   #cleans up the string for further processing and separates arguments from body
   def block2source(b, method_name)
-
     args = nil
     block = b.strip
     block = block[method_name.length..-1].strip if block.start_with? method_name.to_s
@@ -335,28 +354,5 @@ class Context
       block = block[0..-2]
     end
     block
-  end
-
-  #separates the arguments from the body
-  def get_arguments_and_body(block)
-    index = block =~ /[^{do \t]/
-    raise "invalid block source \n#{block}" unless index
-
-    block = block[index..-1]
-    index = block.index '|'
-    line_end = block =~ /[^| ]/
-    if index and (!line_end || index < line_end) #arguments supplied
-      block = block[1..-1]
-      index = (block.index '|')
-      line_end = block[0..-1] =~ /[^a-z,A-Z0-9 |_]/
-      index = 1 if !index or index > line_end
-      args = block[0..index-1]
-      block = block[index+1..-1]
-      index = 0
-    else
-      args = nil
-      index = 0
-    end
-    return args, block, index
   end
 end
