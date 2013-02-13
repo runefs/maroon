@@ -174,7 +174,6 @@ class Context
     evaluated = ast_eval method_source, binding
     ast = evaluated.to_ast
     transform_ast ast
-    p "#{ast}"
     args, block = block2source LiveAST.parser::Unparser.unparse(ast), method_name
     args = "(#{args})" if args
     "\ndef #{method_name} #{args}\n#{block} end\n"
