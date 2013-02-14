@@ -51,10 +51,11 @@ class Context
   #name:: the name of the context. Since this is used as the name of a class, class naming convetions should be used
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
-  def self.define(name, &block)
+  def self.define(*args, &block)
+    name,base_class = *args
     ctx = Context.new
     ctx.instance_eval &block
-    return ctx.send(:finalize, name)
+    return ctx.send(:finalize, name, base_class)
   end
 
   private
@@ -117,8 +118,8 @@ class Context
     @role_alias.last()[a] = role_name
   end
 
-  def finalize(name)
-    c = Class.new
+  def finalize(name, base_class)
+    c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
     code = ''
     fields = ''

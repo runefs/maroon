@@ -1,7 +1,13 @@
 require '../lib/Moby.rb'
 require '../lib/Moby/kernel.rb'
 
-context :Greeter do
+class Foo
+  def say
+    self.greet
+  end
+end
+
+p (Context::define :Greeter, Foo do
   role :who do
     say do
       self
@@ -10,15 +16,18 @@ context :Greeter do
       self.say
     end
   end
-  greeting do
-    p "Hello #{who.talk}!"
+  role :greeting do end
+  greet do
+    p "#{greeting} #{who.say}!"
   end
-end
+end)
 
 class Greeter
-  def initialize(player)
+  def initialize(greeting,player)
     @who = player
+    @greeting = greeting
   end
 end
 
-Greeter.new('world').greeting #Will print "Hello world!"
+Greeter.new('hello','world').greet #Will print "Hello world!"
+Greeter.new('hello','world').say #calls greet and provides that inheritance works
