@@ -1,33 +1,42 @@
+#Thanks to Ted Milken for updating the original example
+
 require '../lib/Moby.rb'
 require '../lib/Moby/kernel.rb'
 
-class Foo
-  def say
-    self.greet
-  end
+class Person
+  attr_accessor :name
+  attr_accessor :greeting
 end
 
-p (Context::define :Greeter, Foo do
-  role :who do
-    say do
-      self
-    end
-    talk do
-      self.say
+context :Greet_Someone, :greet do
+  role :greeter do
+    welcome do
+      self.greeting
     end
   end
-  role :greeting do end
+
+  role :greeted do
+  end
+
   greet do
-    p "#{greeting} #{who.say}!"
-  end
-end)
-
-class Greeter
-  def initialize(greeting,player)
-    @who = player
-    @greeting = greeting
+    puts "#{greeter.name}: \"#{greeter.welcome}, #{greeted.name}!\""
   end
 end
 
-Greeter.new('hello','world').greet #Will print "Hello world!"
-Greeter.new('hello','world').say #calls greet and provides that inheritance works
+class Greet_Someone
+  def initialize(greeter, greeted)
+    @greeter = greeter
+    @greeted = greeted
+  end
+end
+
+p1 = Person.new
+p1.name = 'Bob'
+p1.greeting = 'Hello'
+
+p2 = Person.new
+p2.name = 'World!'
+p2.greeting = 'Greetings'
+
+Greet_Someone.execute p1, p2
+Greet_Someone.new(p2, p1).greet

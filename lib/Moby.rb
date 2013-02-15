@@ -52,10 +52,12 @@ class Context
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
   def self.define(*args, &block)
-    name,base_class = *args
+    name,base_class,default_interaction = *args
+    #if there's two arguments and the second is not a class it must be an interaction
+    base_class,default_interaction = default_interaction, base_class if base_class and !default_interaction and base_class.instance_of? Symbol
     ctx = Context.new
     ctx.instance_eval &block
-    return ctx.send(:finalize, name, base_class)
+    return ctx.send(:finalize, name,base_class,default_interaction)
   end
 
   private
@@ -118,7 +120,7 @@ class Context
     @role_alias.last()[a] = role_name
   end
 
-  def finalize(name, base_class)
+  def finalize(name, base_class, default)
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
     code = ''
@@ -130,6 +132,10 @@ class Context
       @defining_role = nil
       interactions << "  #{lambda2method(method_name, method_source)}"
     end
+    if default
+      interactions <<"\ndef self.execute(*args);#{name}.new(*args).#{default}; end\n"
+    end
+
     @roles.each do |role, methods|
         fields << "@#{role}\n"
         getters << "def #{role};@#{role} end\n"
@@ -145,11 +151,10 @@ class Context
     code << "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
 
     complete = "class #{name}\r\n#{code}\r\nend"
-    #File.open("#{name}_generate.rb", 'w') { |f| f.write(complete) }
     return c.class_eval(code),complete
   end
 
-  def role_or_interaction_method(method_name, &b)
+  def role_or_interaction_method(method_name,*args, &b)
     raise "method with out block #{method_name}" unless b
 
     args, block = block2source b.to_ruby, method_name

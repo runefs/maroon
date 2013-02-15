@@ -1,5 +1,5 @@
 module Kernel
-  def context(name, &b)
-    Context::define name, &b
+  def context(*args, &b)
+    Context::define *args, &b
   end
 end
