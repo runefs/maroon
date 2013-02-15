@@ -38,5 +38,8 @@ p2 = Person.new
 p2.name = 'World!'
 p2.greeting = 'Greetings'
 
+#Execute is automagically created for the default interaction (specified by the second argument in context :Greet_Someone, :greet do)
+#Executes construc a context object and calls the default interaction on this object
 Greet_Someone.execute p1, p2
+#constructs a Greet_Someone context object and executes greet.
 Greet_Someone.new(p2, p1).greet
