@@ -151,7 +151,8 @@ class Context
     code << "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
 
     complete = "class #{name}\r\n#{code}\r\nend"
-    return c.class_eval(code),complete
+    temp = c.class_eval(code)
+    return (temp ||c),complete
   end
 
   def role_or_interaction_method(method_name,*args, &b)
@@ -243,9 +244,10 @@ class Context
   def rewrite_bind(aliased_role, local, block)
     raise 'aliased_role must be a Symbol' unless aliased_role.instance_of? Symbol
     raise 'local must be a Symbol' unless local.instance_of? Symbol
+    aliased_field = "@#{aliased_role}".to_sym
     assignment = Sexp.new
     assignment[0] = :iasgn
-    assignment[1] = aliased_role
+    assignment[1] = aliased_field
     load_arg = Sexp.new
     load_arg[0] = :lvar
     load_arg[1] = local
@@ -259,14 +261,14 @@ class Context
     assignment[1] = temp_symbol
     load_field = Sexp.new
     load_field[0] = :ivar
-    load_field[1] = aliased_role
+    load_field[1] = aliased_field
     assignment[2] = load_field
     block.insert 1, assignment
 
     # reassign original player
     assignment = Sexp.new
     assignment[0] = :iasgn
-    assignment[1] = aliased_role
+    assignment[1] = aliased_field
     load_temp = Sexp.new
     load_temp[0] = :lvar
     load_temp[1] = temp_symbol

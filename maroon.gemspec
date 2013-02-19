@@ -13,7 +13,7 @@ the first language to support injectionless DCI.
 
 The performance of code written using maroon is on par with code using regular method invocation.
 
-For examples on how to use maroon look at the examples}
+For examples on how to use maroon look at the examples found at the home page}
   gem.summary       = %q{maroon}
   gem.homepage      = 'https://github.com/runefs/maroon'
 

@@ -1,7 +1,7 @@
 #Thanks to Ted Milken for updating the original example
 
 require '../lib/maroon.rb'
-require '../lib/Moby/kernel.rb'
+require '../lib/maroon/kernel.rb'
 
 class Person
   attr_accessor :name

@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+require 'live_ast'
+require 'live_ast/to_ruby'
 #
 # Consider street corners on a Manhattan grid. We want to find the
 # minimal path from the most northeast city to the most
@@ -39,7 +41,7 @@
 #
 # Map is a DCI role. The role in this example is played by an
 # object representing a particular Manhattan geometry
-Context::define :CalculateShortestPath do
+ ctx,source = Context::define :CalculateShortestPath do
   role :distance_labeled_graph_node do
     # Access to roles and other Context data
     tentative_distance_values do
@@ -349,4 +351,6 @@ class CalculateShortestPath
     end while node != nil
   end
 end
+
+ File.open('CalculateShortestPath_generated.rb', 'w') {|f| f.write(source) }
 
