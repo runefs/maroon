@@ -1,4 +1,4 @@
-# Moby
+# Maroon
 
 A module to make pure DCI available in Ruby
 
@@ -6,7 +6,7 @@ A module to make pure DCI available in Ruby
 
 Add this line to your application's Gemfile:
 
-    gem 'Moby'
+    gem 'maroon'
 
 And then execute:
 
@@ -14,11 +14,11 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install Moby
+    $ gem install maroon
 
 ## Usage
 
-See the examples for detailed information on how to use Moby.
+See the examples for detailed information on how to use maroon.
 
 Essentially you can define a context by using
 

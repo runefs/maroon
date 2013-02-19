@@ -1,21 +1,21 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'Moby/version'
+require 'maroon/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = 'Moby'
-  gem.version       = Moby::VERSION
+  gem.name          = 'maroon'
+  gem.version       = Maroon::VERSION
   gem.authors       = ['Rune Funch Søltoft']
   gem.email         = %w(funchsoltoft@gmail.com)
-  gem.description   = %q{Moby makes DCI a DSL for Ruby it's mainly based on the work gone into Marvin,
+  gem.description   = %q{maroon makes DCI a DSL for Ruby it's mainly based on the work gone into Marvin,
 the first language to support injectionless DCI.
 
-The performance of code written using Moby is on par with code using regular method invocation.
+The performance of code written using maroon is on par with code using regular method invocation.
 
-For examples on how to use Moby look at the examples}
-  gem.summary       = %q{Moby}
-  gem.homepage      = 'https://github.com/runefs/Moby'
+For examples on how to use maroon look at the examples}
+  gem.summary       = %q{maroon}
+  gem.homepage      = 'https://github.com/runefs/maroon'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

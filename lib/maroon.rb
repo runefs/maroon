@@ -32,7 +32,7 @@ require 'live_ast/to_ruby'
 #    end
 #
 #    Greeter.new('world').greeting #Will print "Hello world!"
-#Moby is base on Marvin which was the first injectionless language for DCI
+#maroon is base on Marvin which was the first injectionless language for DCI
 #being injectionless there's no runtime extend or anything else impacting the performance. There' only regular method invocation even when using role methods
 #Author:: Rune Funch Søltoft (funchsoltoft@gmail.com)
 #License:: Same as for Ruby
@@ -46,7 +46,7 @@ class Context
   @cached_roles_and_alias_list
 
   #define is the only exposed method and can be used to define a context (class)
-  #if Moby/kernel is required calling context of Context::define are equivalent
+  #if maroon/kernel is required calling context of Context::define are equivalent
   #params
   #name:: the name of the context. Since this is used as the name of a class, class naming convetions should be used
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions

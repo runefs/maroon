@@ -1,4 +1,4 @@
-require '../lib/Moby.rb'
+require '../lib/maroon.rb'
 
 Context::define :MoneyTransfer do
   role :source do

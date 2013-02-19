@@ -1,6 +1,6 @@
 #Thanks to Ted Milken for updating the original example
 
-require '../lib/Moby.rb'
+require '../lib/maroon.rb'
 require '../lib/Moby/kernel.rb'
 
 class Person

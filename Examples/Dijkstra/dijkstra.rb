@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require '../../Lib/Moby.rb'
+require '../../Lib/maroon.rb'
 require './data.rb'
 require './CalculateShortestDistance.rb'
 require './Calculate_Shortest_Path.rb'
