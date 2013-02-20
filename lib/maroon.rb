@@ -54,7 +54,8 @@ class Context
   def self.define(*args, &block)
     name,base_class,default_interaction = *args
     #if there's two arguments and the second is not a class it must be an interaction
-    base_class,default_interaction = default_interaction, base_class if base_class and !default_interaction and base_class.instance_of? Symbol
+    if default_interaction && (!base_class.instance_of? Class) then base_class = eval(base_class.to_s) end
+    base_class,default_interaction = default_interaction, base_class if base_class and !default_interaction and !base_class.instance_of? Class
     ctx = Context.new
     ctx.instance_eval &block
     return ctx.send(:finalize, name,base_class,default_interaction)
@@ -133,7 +134,22 @@ class Context
       interactions << "  #{lambda2method(method_name, method_source)}"
     end
     if default
-      interactions <<"\ndef self.execute(*args);#{name}.new(*args).#{default}; end\n"
+      interactions <<"
+         def self.call(*args)
+             arity =#{name}.method(:new).arity
+             newArgs = args[0..arity-1]
+              p \"new \#{newArgs}\"
+             obj = #{name}.new *newArgs
+             if arity < args.length
+                 methodArgs = args[arity..-1]
+                 p \"method \#{methodArgs}\"
+                 obj.#{default} *methodArgs
+             else
+                obj.#{default}
+             end
+         end
+         "
+      interactions <<"\ndef call(*args);#{default} *args; end\n"
     end
 
     @roles.each do |role, methods|
@@ -207,9 +223,9 @@ class Context
   def rewrite_bind?(block, expr)
     #check if the first call is a bind call
     if expr && expr.length && (expr[0] == :call && expr[1] == nil && expr[2] == :bind)
-      arglist = expr[3]
-      if arglist && arglist[0] == :arglist
-        arguments = arglist[1]
+      argument_list = expr[3]
+      if argument_list && argument_list[0] == :arglist
+        arguments = argument_list[1]
         if arguments && arguments[0] == :hash
           block.delete_at 1
           count = (arguments.length-1) / 2

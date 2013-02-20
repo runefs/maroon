@@ -23,6 +23,21 @@ context :Greet_Someone, :greet do
   end
 end
 
+context :Greet_Someone2, :greet do
+  role :greeter do
+    welcome do
+      self.greeting
+    end
+  end
+
+  role :greeted do
+  end
+
+  greet do |msg|
+    "#{greeter.name}: \"#{greeter.welcome}, #{greeted.name}!\" #{msg}"
+  end
+end
+
 class Person
   attr_accessor :name
   attr_accessor :greeting
@@ -36,6 +51,13 @@ class Greet_Someone
   end
 end
 
+class Greet_Someone2
+  def initialize(greeter, greeted)
+    @greeter = greeter
+    @greeted = greeted
+  end
+end
+
 class BasicTests < Test::Unit::TestCase
 
   def test_define_context
@@ -43,6 +65,17 @@ class BasicTests < Test::Unit::TestCase
     ctx,source = Context::define name do end
     assert_equal(ctx.name, "Kernel::#{name}")
     assert_equal(source,"class #{name}\r\n\n\n  private\n\n\n\r\nend")
+  end
+
+  def test_base_class
+    name = :MyDerivedContext
+    ctx,source = context name, Person do end
+    obj = MyDerivedContext.new
+    obj.name = name
+    assert_equal(ctx.name, "Kernel::#{name}")
+    assert_not_nil(obj.name)
+    assert((obj.class < Person), 'Object is not a Person')
+    assert_equal(name, obj.name)
   end
 
   def test_define_role
@@ -97,12 +130,37 @@ class TestExamples < Test::Unit::TestCase
 
      #Execute is automagically created for the default interaction (specified by the second argument in context :Greet_Someone, :greet do)
      #Executes constructs a context object and calls the default interaction on this object
-     res1 = Greet_Someone.execute p1, p2
+     res1 = Greet_Someone.call p1, p2
      res2 = Greet_Someone.new(p2, p1).greet
+     res3 = Greet_Someone.new(p2, p1).call
      assert_equal(res1,"#{p1.name}: \"#{p1.greeting}, #{p2.name}!\"")
      assert_equal(res1,Greet_Someone.new(p1, p2).greet) #verifies default action
      #constructs a Greet_Someone context object and executes greet.
      assert_equal(res2,"#{p2.name}: \"#{p2.greeting}, #{p1.name}!\"")
+     assert_equal(res2,res3)
    end
+end
+
+
+class TestExamples < Test::Unit::TestCase
+  def test_greeter
+    p1 = Person.new
+    p1.name = 'Bob'
+    p1.greeting = 'Hello'
+
+    p2 = Person.new
+    p2.name = 'World!'
+    p2.greeting = 'Greetings'
+
+    message = ' Nice weather, don\'t you think?'
+    res1 = Greet_Someone2.call p1, p2, message
+    res2 = Greet_Someone2.new(p2, p1).greet message
+    res3 = Greet_Someone2.new(p2, p1).call message
+    assert_equal(res1,"#{p1.name}: \"#{p1.greeting}, #{p2.name}!\" #{message}")
+    assert_equal(res1,Greet_Someone2.new(p1, p2).greet(message)) #verifies default action
+    #constructs a Greet_Someone context object and executes greet.
+    assert_equal(res2,"#{p2.name}: \"#{p2.greeting}, #{p1.name}!\" #{message}")
+    assert_equal(res2,res3)
+  end
 end
 
