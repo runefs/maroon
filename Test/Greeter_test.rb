@@ -1,4 +1,4 @@
-require "test/unit"
+require 'test/unit'
 require '../lib/maroon.rb'
 require '../lib/maroon/kernel.rb'
 
@@ -79,7 +79,7 @@ class BasicTests < Test::Unit::TestCase
     arr = MyContextUsingBind.new.go_do
     assert_not_nil(ctx)
     assert_equal(ctx.name, "Kernel::#{name}")
-    assert_equal("class MyContextUsingBind\r\n  \ndef go_do \na = Array.new\n  [1, 2].each do |e|\n    temp____other_role = @other_role\n    @other_role = e\n    (a << self_other_role_plus_one)\n    @other_role = temp____other_role\n  end\n  a\n end\n\n@other_role\n\n  private\ndef other_role;@other_role end\n\n  \ndef self_other_role_plus_one \n(other_role + 1)  end\n\n\r\nend",source)
+    assert_equal("class #{name}\r\n  \ndef go_do \na = Array.new\n  [1, 2].each do |e|\n    temp____#{other_name} = @#{other_name}\n    @#{other_name} = e\n    (a << self_#{other_name}_plus_one)\n    @#{other_name} = temp____#{other_name}\n  end\n  a\n end\n\n@#{other_name}\n\n  private\ndef #{other_name};@#{other_name} end\n\n  \ndef self_#{other_name}_plus_one \n(#{other_name} + 1)  end\n\n\r\nend",source)
     assert_equal(2,arr[0])
     assert_equal(3,arr[1])
   end
@@ -96,7 +96,7 @@ class TestExamples < Test::Unit::TestCase
      p2.greeting = 'Greetings'
 
      #Execute is automagically created for the default interaction (specified by the second argument in context :Greet_Someone, :greet do)
-     #Executes construc a context object and calls the default interaction on this object
+     #Executes constructs a context object and calls the default interaction on this object
      res1 = Greet_Someone.execute p1, p2
      res2 = Greet_Someone.new(p2, p1).greet
      assert_equal(res1,"#{p1.name}: \"#{p1.greeting}, #{p2.name}!\"")
