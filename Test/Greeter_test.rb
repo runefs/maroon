@@ -34,7 +34,9 @@ context :Greet_Someone2, :greet do
   end
 
   greet do |msg|
-    "#{greeter.name}: \"#{greeter.welcome}, #{greeted.name}!\" #{msg}"
+    a = "#{greeter.name}: \"#{greeter.welcome}, #{greeted.name}!\" #{msg}"
+    p a
+    a
   end
 end
 
@@ -93,7 +95,7 @@ class BasicTests < Test::Unit::TestCase
   end
 
   def test_bind
-    name,role_name,other_name = :MyContextUsingBind,:my_role, :other_role
+    name,other_name = :MyContextUsingBind,:other_role
     ctx,source = Context::define name do
       role other_name do
           plus_one do
@@ -163,4 +165,7 @@ class TestExamples < Test::Unit::TestCase
     assert_equal(res2,res3)
   end
 end
+
+
+
 
