@@ -1,6 +1,16 @@
 # -*- encoding: utf-8 -*-
-require '../lib/Source_cleaner.rb'
-require '../lib/rewriter.rb'
+require './lib/Source_cleaner.rb'
+require './lib/rewriter.rb'
+
+
+class Method_info
+  def initialize(arguments,body)
+    @arguments = arguments
+    @body = body
+  end
+  attr_reader :arguments
+  attr_reader :body
+end
 
 ##
 # The Context class is used to define a DCI context with roles and their role methods
@@ -101,9 +111,9 @@ class Context
     getters = ''
     impl = ''
     interactions = ''
-    @interactions.each do |method_name, method_source|
+    @interactions.each do |method_name, method|
       @defining_role = nil
-      interactions << "  #{lambda2method(method_name, method_source)}"
+      interactions << "  #{lambda2method(method_name, method)}"
     end
     if default
       interactions <<"
@@ -139,6 +149,7 @@ class Context
     code << "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
 
     complete = "class #{name}\r\n#{code}\r\nend"
+    #File.open("#{name}_generated.rb", 'w') {|f| f.write(complete) }
     temp = c.class_eval(code)
     return (temp ||c),complete
   end
@@ -146,10 +157,8 @@ class Context
   def role_or_interaction_method(method_name,*args, &b)
     raise "method with out block #{method_name}" unless b
 
-    args, block = block2source method_name, &b
-    args = "|#{args}|" if args
-    source = "(proc do #{args}\n #{block}\nend)"
-    methods[method_name] = source
+    args, body = block2source method_name, &b
+    methods[method_name] = Method_info.new args,body
   end
 
   alias method_missing role_or_interaction_method

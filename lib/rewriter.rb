@@ -1,3 +1,5 @@
+require 'Ripper'
+
 module Rewriter
   private
   def role_aliases

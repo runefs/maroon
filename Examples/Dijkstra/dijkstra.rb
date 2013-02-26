@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
-require '../../Lib/maroon.rb'
-require './data.rb'
-require './CalculateShortestDistance.rb'
-require './Calculate_Shortest_Path.rb'
+require './Lib/maroon.rb'
+require './Examples/Dijkstra/data.rb'
+require './Examples/Dijkstra/CalculateShortestDistance.rb'
+require './Examples/Dijkstra/Calculate_Shortest_Path.rb'
 #!/usr/bin/env ruby
 # Example in Ruby -- Dijkstra's algorithm in DCI
 #    Modified and simplified for a Manhattan geometry with 8 roles

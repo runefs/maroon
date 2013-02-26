@@ -1,4 +1,4 @@
-require '../lib/maroon.rb'
+require './lib/maroon.rb'
 
 Context::define :MoneyTransfer do
   role :source do

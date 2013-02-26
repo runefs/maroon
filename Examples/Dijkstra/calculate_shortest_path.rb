@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-require 'live_ast'
-require 'live_ast/to_ruby'
 #
 # Consider street corners on a Manhattan grid. We want to find the
 # minimal path from the most northeast city to the most
@@ -352,5 +350,5 @@ class CalculateShortestPath
   end
 end
 
- File.open('CalculateShortestPath_generated.rb', 'w') {|f| f.write(source) }
+File.open('CalculateShortestPath_generated.rb', 'w') {|f| f.write(source) }
 
