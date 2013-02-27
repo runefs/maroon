@@ -1,7 +1,7 @@
 require 'sourcify'
 require 'sorcerer'
 
-module Source_cleaner
+module SourceCleaner
  private
   #Separates arguments from body
   def block2source(&block)
