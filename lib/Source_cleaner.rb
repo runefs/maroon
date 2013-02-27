@@ -1,7 +1,7 @@
 require 'sourcify'
 require 'sorcerer'
 
-module Source_cleaner
+module SourceCleaner
  private
 
   #cleans up the string for further processing and separates arguments from body

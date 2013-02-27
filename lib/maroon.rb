@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
-require './lib/Source_cleaner.rb'
+require './lib/source_cleaner.rb'
 require './lib/rewriter.rb'
 
 
-class Method_info
+class MethodInfo
   def initialize(arguments,body)
     @arguments = arguments
     @body = body
@@ -48,7 +48,7 @@ end
 #License:: Same as for Ruby
 ##
 class Context
-  include Rewriter,Source_cleaner
+  include Rewriter, SourceCleaner
   @roles
   @interactions
   @defining_role
@@ -158,7 +158,7 @@ class Context
     raise "method with out block #{method_name}" unless b
 
     args, body = block2source method_name, &b
-    methods[method_name] = Method_info.new args,body
+    methods[method_name] = MethodInfo.new args,body
   end
 
   alias method_missing role_or_interaction_method
