@@ -30,6 +30,12 @@ Context::define :context_name do
    end
 end
 
+## Running Tests
+
+If you're using Bundler, run `bundle install` to setup your environment.
+
+Run `rake test` or just `rake` to make the tests run.
+
 
 ## Contributing
 

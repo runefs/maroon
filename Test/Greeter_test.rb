@@ -1,13 +1,13 @@
-require 'test/unit'
-require './lib/maroon.rb'
-require './lib/maroon/kernel.rb'
-require 'ripper'
-require './Test/source_assertions.rb'
+require 'test_helper'
+
+require_relative '../lib/maroon.rb'
+require_relative '../lib/maroon/kernel.rb'
+require_relative 'source_assertions.rb'
 require './Examples/meter.rb'
 
 
 class BasicTests < Test::Unit::TestCase
-  include Source_assertions
+  include SourceAssertions
 
   def test_define_context
     name = :MyContext
