@@ -126,7 +126,6 @@ class Context
   end
 
   def generate_context_code(default, name)
-    code = ''
     fields = ''
     getters = ''
     impl = ''
@@ -140,11 +139,9 @@ class Context
          def self.call(*args)
              arity = #{name}.method(:new).arity
              newArgs = args[0..arity-1]
-              p "new #{newArgs}"
              obj = #{name}.new *newArgs
              if arity < args.length
                  methodArgs = args[arity..-1]
-                 p "method #{methodArgs}"
                  obj.#{default} *methodArgs
              else
                 obj.#{default}
