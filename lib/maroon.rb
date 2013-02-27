@@ -116,21 +116,21 @@ class Context
       interactions << "  #{lambda2method(method_name, method)}"
     end
     if default
-      interactions <<"
+      interactions << %{
          def self.call(*args)
-             arity =#{name}.method(:new).arity
+             arity = #{name}.method(:new).arity
              newArgs = args[0..arity-1]
-              p \"new \#{newArgs}\"
+              p "new #{newArgs}"
              obj = #{name}.new *newArgs
              if arity < args.length
                  methodArgs = args[arity..-1]
-                 p \"method \#{methodArgs}\"
+                 p "method #{methodArgs}"
                  obj.#{default} *methodArgs
              else
                 obj.#{default}
              end
          end
-         "
+         }
       interactions <<"\ndef call(*args);#{default} *args; end\n"
     end
 
