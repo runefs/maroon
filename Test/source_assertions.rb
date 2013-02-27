@@ -1,4 +1,6 @@
-module Source_assertions
+require 'ripper'
+
+module SourceAssertions
   def assert_source_equal(expected, actual)
     expected_sexp = Ripper::sexp expected
     actual_sexp = Ripper::sexp actual

@@ -1,4 +1,4 @@
-require 'Ripper'
+require 'ripper'
 
 module Rewriter
   private
