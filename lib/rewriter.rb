@@ -61,6 +61,7 @@ module Rewriter
 #Calls rewrite_block if needed and will return true if the AST was changed otherwise false
 ##
   def rewrite_bind?(block, expr)
+    changed = false
     #check if the first call is a bind call
     if expr && expr.length && (expr[0] == :call && expr[1] == nil && expr[2] == :bind)
       argument_list = expr[3]
@@ -84,20 +85,20 @@ module Rewriter
             raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and @roles.has_key? aliased_role
             add_alias local, aliased_role
             #replace bind call with assignment of iteration variable to role field
-            rewrite_bind(aliased_role, local, block)
-            return true
+            do_rewrite_bind(aliased_role, local, block)
+            changed = true
           end
         end
       end
     end
-    false
+    changed
   end
 
 ##
 #removes call to bind in a block
 #and replaces it with assignment to the proper role player local variables
 #in the end of the block the local variables have their original values reassigned
-  def rewrite_bind(aliased_role, local, block)
+  def do_rewrite_bind(aliased_role, local, block)
     raise 'aliased_role must be a Symbol' unless aliased_role.instance_of? Symbol
     raise 'local must be a Symbol' unless local.instance_of? Symbol
     aliased_field = "@#{aliased_role}".to_sym
