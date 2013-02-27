@@ -63,13 +63,13 @@ class Context
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
   def self.define(*args, &block)
-    name,base_class,default_interaction = *args
-    #if there's two arguments and the second is not a class it must be an interaction
-    if default_interaction && (!base_class.instance_of? Class) then base_class = eval(base_class.to_s) end
-    base_class,default_interaction = default_interaction, base_class if base_class and !default_interaction and !base_class.instance_of? Class
-    ctx = Context.new
-    ctx.instance_eval &block
+    base_class, ctx, default_interaction, name = self.send(:create_context_factory,args, block)
     return ctx.send(:finalize, name,base_class,default_interaction)
+  end
+
+  def self.generate(*args, &block)
+    base_class, ctx, default_interaction, name = create_context_factory(args, block)
+    return ctx.send(:generate_context_code, default_interaction,name)
   end
 
   private
@@ -106,6 +106,26 @@ class Context
   def finalize(name, base_class, default)
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
+    code = generate_context_code(default, name)
+    complete = "class #{name}\r\n#{code}\r\nend"
+    #File.open("#{name}_generated.rb", 'w') {|f| f.write(complete) }
+    temp = c.class_eval(code)
+    return (temp ||c),complete
+  end
+
+  def self.create_context_factory(args, block)
+    name, base_class, default_interaction = *args
+    #if there's two arguments and the second is not a class it must be an interaction
+    if default_interaction && (!base_class.instance_of? Class) then
+      base_class = eval(base_class.to_s)
+    end
+    base_class, default_interaction = default_interaction, base_class if base_class and !default_interaction and !base_class.instance_of? Class
+    ctx = Context.new
+    ctx.instance_eval &block
+    return base_class, ctx, default_interaction, name
+  end
+
+  def generate_context_code(default, name)
     code = ''
     fields = ''
     getters = ''
@@ -113,7 +133,7 @@ class Context
     interactions = ''
     @interactions.each do |method_name, method|
       @defining_role = nil
-      interactions << "  #{lambda2method(method_name, method)}"
+      interactions << "  #{method_info2method_definition(method_name, method)}"
     end
     if default
       interactions <<"
@@ -135,29 +155,24 @@ class Context
     end
 
     @roles.each do |role, methods|
-        fields << "@#{role}\n"
-        getters << "def #{role};@#{role} end\n"
+      fields << "@#{role}\n"
+      getters << "def #{role};@#{role} end\n"
 
-        methods.each do |method_name, method_source|
-          @defining_role = role
-          rewritten_method_name = "self_#{role}_#{method_name}"
-          definition = lambda2method rewritten_method_name, method_source
-          impl << "  #{definition}" if definition
-        end
+      methods.each do |method_name, method_source|
+        @defining_role = role
+        rewritten_method_name = "self_#{role}_#{method_name}"
+        definition = method_info2method_definition rewritten_method_name, method_source
+        impl << "  #{definition}" if definition
+      end
     end
 
-    code << "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
-
-    complete = "class #{name}\r\n#{code}\r\nend"
-    #File.open("#{name}_generated.rb", 'w') {|f| f.write(complete) }
-    temp = c.class_eval(code)
-    return (temp ||c),complete
+    "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
   end
 
-  def role_or_interaction_method(method_name,*args, &b)
+  def role_or_interaction_method(method_name, &b)
     raise "method with out block #{method_name}" unless b
 
-    args, body = block2source method_name, &b
+    args, body = block2source &b
     methods[method_name] = Method_info.new args,body
   end
 

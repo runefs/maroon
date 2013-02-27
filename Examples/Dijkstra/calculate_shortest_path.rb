@@ -2,7 +2,7 @@
 #
 # Consider street corners on a Manhattan grid. We want to find the
 # minimal path from the most northeast city to the most
-# southeast city. Use Dijstra's algorithm
+# southeast city. Use Dijkstra's algorithm
 #
 
 

@@ -43,7 +43,10 @@ module Rewriter
   end
 
 ##
-#Test if there's a block that needs to potentially be transformed
+#Transforms blocks as needed
+#-Rewrites self in role methods to the role getter
+#-Rewrites binds when needed
+#-Rewrites role method calls to instance method calls on the context
 ##
   def transform_block(exp)
     if exp && exp[0] == :iter
@@ -61,33 +64,39 @@ module Rewriter
 #Calls rewrite_block if needed and will return true if the AST was changed otherwise false
 ##
   def rewrite_bind?(block, expr)
-    changed = false
     #check if the first call is a bind call
     if expr && expr.length && (expr[0] == :call && expr[1] == nil && expr[2] == :bind)
-      argument_list = expr[3]
-      if argument_list && argument_list[0] == :arglist
-        arguments = argument_list[1]
-        if arguments && arguments[0] == :hash
-          block.delete_at 1
-          count = (arguments.length-1) / 2
-          (1..count).each do |j|
-            temp = j * 2
-            local = arguments[temp-1][1]
-            if local.instance_of? Sexp
-              local = local[1]
-            end
-            raise 'invalid value for role alias' unless local.instance_of? Symbol
-            #find the name of the role being bound to
-            aliased_role = arguments[temp][1]
-            if aliased_role.instance_of? Sexp
-              aliased_role = aliased_role[1]
-            end
-            raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and @roles.has_key? aliased_role
-            add_alias local, aliased_role
-            #replace bind call with assignment of iteration variable to role field
-            do_rewrite_bind(aliased_role, local, block)
-            changed = true
+      rewrite_bind_in_block(block, expr)
+    else
+      false
+    end
+  end
+
+  def rewrite_bind_in_block(block, expr)
+    changed = false
+    argument_list = expr[3]
+    if argument_list && argument_list[0] == :arglist
+      arguments = argument_list[1]
+      if arguments && arguments[0] == :hash
+        block.delete_at 1
+        count = (arguments.length-1) / 2
+        (1..count).each do |j|
+          temp = j * 2
+          local = arguments[temp-1][1]
+          if local.instance_of? Sexp
+            local = local[1]
           end
+          raise 'invalid value for role alias' unless local.instance_of? Symbol
+          #find the name of the role being bound to
+          aliased_role = arguments[temp][1]
+          if aliased_role.instance_of? Sexp
+            aliased_role = aliased_role[1]
+          end
+          raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and @roles.has_key? aliased_role
+          add_alias local, aliased_role
+          #replace bind call with assignment of iteration variable to role field
+          rewrite_bind_ast(aliased_role, local, block)
+          changed = true
         end
       end
     end
@@ -98,9 +107,11 @@ module Rewriter
 #removes call to bind in a block
 #and replaces it with assignment to the proper role player local variables
 #in the end of the block the local variables have their original values reassigned
-  def do_rewrite_bind(aliased_role, local, block)
+  def rewrite_bind_ast(aliased_role, local, block)
     raise 'aliased_role must be a Symbol' unless aliased_role.instance_of? Symbol
     raise 'local must be a Symbol' unless local.instance_of? Symbol
+    # assigning role player to role filed
+    #notice that this will be executed after the next block
     aliased_field = "@#{aliased_role}".to_sym
     assignment = Sexp.new
     assignment[0] = :iasgn
@@ -112,6 +123,7 @@ module Rewriter
     block.insert 1, assignment
 
     # assign role player to temp
+    # notice this is prepended Ie. inserted in front of the role player to role field
     temp_symbol = "temp____#{aliased_role}".to_sym
     assignment = Sexp.new
     assignment[0] = :lasgn

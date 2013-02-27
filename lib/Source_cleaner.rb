@@ -3,9 +3,8 @@ require 'sorcerer'
 
 module Source_cleaner
  private
-
-  #cleans up the string for further processing and separates arguments from body
-  def block2source(method_name, &block)
+  #Separates arguments from body
+  def block2source(&block)
     source = block.to_sexp
     raise 'unknown format' unless source[0] == :iter or source.length != 4
     args = get_args source[2]
@@ -13,6 +12,7 @@ module Source_cleaner
     return args, body
   end
 
+ #GEts argument names as a comma separated list
   def get_args(sexp)
     return nil unless sexp
     return sexp[1] if sexp[0] == :lasgn
@@ -24,7 +24,8 @@ module Source_cleaner
     args.join(',')
   end
 
- def lambda2method (method_name, method)
+ #Transforms a S-expression body to source
+ def method_info2method_definition (method_name, method)
     arguments, body  = method.arguments, method.body
     transform_ast body
     block = Ruby2Ruby.new.process(body)
