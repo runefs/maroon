@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative './test_helper.rb'
 
 require_relative '../lib/maroon.rb'
 require_relative '../lib/maroon/kernel.rb'
@@ -6,7 +6,7 @@ require_relative 'source_assertions.rb'
 require './Examples/meter.rb'
 
 
-class BasicTests < Test::Unit::TestCase
+class BasicTests < MiniTest::Unit::TestCase
   include SourceAssertions
 
   def test_define_context
@@ -24,7 +24,7 @@ class BasicTests < Test::Unit::TestCase
     obj = MyDerivedContext.new
     obj.name = name
     assert_equal(ctx.name, "Kernel::#{name}")
-    assert_not_nil(obj.name)
+    refute_nil(obj.name)
     assert((obj.class < Person), 'Object is not a Person')
     assert_equal(name, obj.name)
   end
@@ -38,7 +38,7 @@ class BasicTests < Test::Unit::TestCase
         end
       end
     end
-    assert_not_nil(ctx)
+    refute_nil(ctx)
     assert_equal(ctx.name, "Kernel::#{name}")
     assert_source_equal("class #{name}\r\n\n@#{role_name}\n\n  private\ndef #{role_name};@#{role_name} end\n\n  \ndef self_#{role_name}_role_go_do \n end\n\n\r\nend", source)
   end
@@ -55,7 +55,7 @@ class BasicTests < Test::Unit::TestCase
         end
       end
     end
-    assert_not_nil(ctx)
+    refute_nil(ctx)
     assert_equal(ctx.name, "Kernel::#{name}")
     assert_source_equal("class #{name}\r\n\n@#{role_name}\n\n  private\ndef #{role_name};@#{role_name} end\n\n  \ndef self_#{role_name}_role_go_do(x,y) \n end\n\ndef self_#{role_name}_role_go(x) \n end\n\n\r\nend", source)
   end
@@ -78,7 +78,7 @@ class BasicTests < Test::Unit::TestCase
       end
     end
     arr = MyContextUsingBind.new.go_do
-    assert_not_nil(ctx)
+    refute_nil(ctx)
     assert_equal(ctx.name, "Kernel::#{name}")
     expected = "class MyContextUsingBind\r\n  \ndef go_do \na = Array.new\n  [1, 2].each do |e|\n    temp____other_role = @other_role\n    @other_role = e\n    (a << self_other_role_plus_one)\n    @other_role = temp____other_role\n  end\n  a\n end\n\n@other_role\n\n  private\ndef other_role;@other_role end\n\n  \ndef self_other_role_plus_one \n(other_role + 1)  end\n\n\r\nend"
     assert_source_equal(expected, source)
@@ -140,7 +140,7 @@ class Greet_Someone2
   end
 end
 
-class TestExamples < Test::Unit::TestCase
+class TestExamples < MiniTest::Unit::TestCase
   def test_greeter
     p1 = Person.new
     p1.name = 'Bob'
@@ -164,7 +164,7 @@ class TestExamples < Test::Unit::TestCase
 end
 
 
-class TestExamples < Test::Unit::TestCase
+class TestExamples < MiniTest::Unit::TestCase
   def test_greeter
     p1 = Person.new
     p1.name = 'Bob'
@@ -186,7 +186,7 @@ class TestExamples < Test::Unit::TestCase
   end
 end
 
-class TestExamples < Test::Unit::TestCase
+class TestExamples < MiniTest::Unit::TestCase
   def test_meter_example
     meter = Meter.new Time::now, Position.new(1,2,0)
     result = meter.call Position.new(2,4,1)

@@ -15,7 +15,7 @@ The performance of code written using maroon is on par with code using regular m
 
 For examples on how to use maroon look at the examples found at the home page}
   gem.summary       = %q{maroon}
-  gem.homepage      = 'https://github.com/runefs/maroon'
+  gem.homepage      = 'https://github.com/runefs/Moby'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
