@@ -3,6 +3,7 @@ require './lib/maroon.rb'
 require './lib/maroon/kernel.rb'
 require 'ripper'
 require './Test/source_assertions.rb'
+require './Examples/meter.rb'
 
 
 class BasicTests < Test::Unit::TestCase
@@ -182,6 +183,14 @@ class TestExamples < Test::Unit::TestCase
                                                                   #constructs a Greet_Someone context object and executes greet.
     assert_equal(res2, "#{p2.name}: \"#{p2.greeting}, #{p1.name}!\" #{message}")
     assert_equal(res2, res3)
+  end
+end
+
+class TestExamples < Test::Unit::TestCase
+  def test_meter_example
+    meter = Meter.new Time::now, Position.new(1,2,0)
+    result = meter.call Position.new(2,4,1)
+    assert_equal(3,result.to_i)
   end
 end
 

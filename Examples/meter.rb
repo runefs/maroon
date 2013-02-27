@@ -53,7 +53,6 @@ context :Route do
       return 0 unless prev
       delta = Math.sqrt((prev.x-self.x)**2 + (prev.y-self.y)**2 + (prev.z-self.z)**2)
       road_type = @road_types[self]
-      p "road #{road_type}: prices #{prices}"
       price = prices[road_type]
       delta * price
     end
@@ -118,6 +117,3 @@ class Position
     @z = z
   end
 end
-
-meter = Meter.new Time::now, Position.new(1,2,0)
-p meter.call Position.new(2,4,1)
