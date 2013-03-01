@@ -2,7 +2,6 @@
 require './lib/source_cleaner.rb'
 require './lib/rewriter.rb'
 
-
 class MethodInfo
   def initialize(arguments,body)
     @arguments = arguments
@@ -55,6 +54,7 @@ class Context
   @role_alias
   @alias_list
   @cached_roles_and_alias_list
+  @@with_contracts = false
 
   #define is the only exposed method and can be used to define a context (class)
   #if maroon/kernel is required calling context of Context::define are equivalent
@@ -70,6 +70,15 @@ class Context
   def self.generate(*args, &block)
     base_class, ctx, default_interaction, name = create_context_factory(args, block)
     return ctx.send(:generate_context_code, default_interaction,name)
+  end
+
+  def self.with_contracts=(value)
+    raise 'make up your mind! disabling contracts during execution will result in undefined behavior' if @@with_contracts && !value
+    @@with_contracts = value
+  end
+
+  def self.with_contracts
+    @@with_contracts
   end
 
   private
@@ -107,6 +116,22 @@ class Context
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
     code = generate_context_code(default, name)
+    if @@with_contracts
+      c.class_eval('def self.assert_that(obj)
+          ContextAsserter.new(self.contracts,obj)
+        end
+        def self.refute_that(obj)
+          ContextAsserter.new(self.contracts,obj,false)
+        end
+        def self.contracts
+          @@contracts
+        end
+        def self.contracts=(value)
+          raise \'Contracts must be supplied\' unless value
+          @@contracts = value
+        end')
+      c.contracts=self.contracts
+    end
     complete = "class #{name}\r\n#{code}\r\nend"
     #File.open("#{name}_generated.rb", 'w') {|f| f.write(complete) }
     temp = c.class_eval(code)

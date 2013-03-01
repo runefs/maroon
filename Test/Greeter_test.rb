@@ -2,7 +2,8 @@ require_relative './test_helper.rb'
 
 require_relative '../lib/maroon.rb'
 require_relative '../lib/maroon/kernel.rb'
-require_relative 'source_assertions.rb'
+require_relative '../lib/maroon/contracts.rb'
+require_relative 'assertions.rb'
 require './Examples/meter.rb'
 
 
@@ -174,6 +175,9 @@ class TestExamples < MiniTest::Unit::TestCase
     p2.name = 'World!'
     p2.greeting = 'Greetings'
 
+    puts "with_contracts: #{Context::with_contracts}"
+    Greet_Someone.assert_that(p1).can_play(:greeter)
+    Greet_Someone.assert_that(p1).can_play(:greeted)
     message = ' Nice weather, don\'t you think?'
     res1 = Greet_Someone2.call p1, p2, message
     res2 = Greet_Someone2.new(p2, p1).greet message

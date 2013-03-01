@@ -30,11 +30,11 @@ module SourceAssertions
         if actual[i].instance_of? Array
           assert_sexp_with_ident(expected[i], actual[i], message)
         else
-          assert_fail(message || "the arrays differ at index #{i}. Actual was an element but an array was expected")
+          refute(message || "the arrays differ at index #{i}. Actual was an element but an array was expected")
         end
       else
         if expected[i] != actual[i]
-          assert_fail (message || "the arrays differ at index #{i}")
+          assert_equal(expected[i],actual[i], message || "the arrays differ at index #{i}")
         end
       end
     end

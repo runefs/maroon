@@ -1,6 +1,11 @@
 require 'ripper'
 
 module Rewriter
+
+  def contracts
+    (@contracts ||= {})
+  end
+
   private
   def role_aliases
     @alias_list if @alias_list
@@ -31,15 +36,26 @@ module Rewriter
     @role_alias.last()[a] = role_name
   end
 
+  def is_in_block?(ast)
+    ast && ast[0] == :lvar
+  end
+
   def role_method_call(ast, method)
+    role = get_role(ast) #is it a call to a role getter
+    in_block = is_in_block? ast
+    role_name = in_block ? role_aliases[ast[1]] : (ast[2] if role)
+    is_role_method = role && role.has_key?(method)
+
+    return role_name, is_role_method
+  end
+
+  def get_role(ast)
     is_call_expression = ast && ast[0] == :call
     self_is_instance_expression = is_call_expression && (!ast[1]) #implicit self
-    is_in_block = ast && ast[0] == :lvar
+
     role_name_index = self_is_instance_expression ? 2 : 1
-    role = (self_is_instance_expression || is_in_block) ? roles[ast[role_name_index]] : nil #is it a call to a role getter
-    is_role_method = role && role.has_key?(method)
-    role_name = is_in_block ? role_aliases[ast[1]] : (ast[2] if self_is_instance_expression)
-    role_name if is_role_method #return role name
+    can_be_role = (self_is_instance_expression || is_in_block?(ast))
+    can_be_role ? roles[ast[role_name_index]] : nil
   end
 
 ##
@@ -177,15 +193,19 @@ module Rewriter
         exp = ast[k]
         if exp
           method_name = exp[2]
-          role = role_method_call exp[1], exp[2]
+          role_name,is_role_method = role_method_call exp[1], exp[2]
           if exp[0] == :iter
             @role_alias.push Hash.new
             transform_block exp
             @role_alias.pop()
           end
-          if exp[0] == :call && role
-            exp[1] = nil #remove call to attribute
-            exp[2] = "self_#{role}_#{method_name}".to_sym
+          if exp[0] == :call
+            if is_role_method #role_name only returned if it's a role method call
+              exp[1] = nil #remove call to attribute
+              exp[2] = "self_#{role_name}_#{method_name}".to_sym
+            else # it's an instance method invocation
+              (contracts[role_name] ||= []) << method_name
+            end
           end
           if exp.instance_of? Sexp
             transform_ast exp
