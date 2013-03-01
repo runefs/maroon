@@ -177,7 +177,7 @@ class TestExamples < MiniTest::Unit::TestCase
 
     puts "with_contracts: #{Context::with_contracts}"
     Greet_Someone.assert_that(p1).can_play(:greeter)
-    Greet_Someone.assert_that(p1).can_play(:greeted)
+    Greet_Someone.refute_that(self).can_play(:greeter)
     message = ' Nice weather, don\'t you think?'
     res1 = Greet_Someone2.call p1, p2, message
     res2 = Greet_Someone2.new(p2, p1).greet message
