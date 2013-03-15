@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-require_relative '../generated/definitions'
 require_relative 'method_ info.rb'
 
 ##

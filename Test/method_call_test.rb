@@ -11,7 +11,7 @@ class Method_call_test  < MiniTest::Unit::TestCase
     method_call = get_method_call {foo.bar}
 
     contracts ={}
-    MethodCall.new(method_call, {},contracts,nil).rewrite_call?
+    MethodCall.new(method_call,  InterpretationContext.new({},contracts,nil,nil)).rewrite_call?
     assert_equal(1,contracts.length)
     assert_equal([:bar], contracts[nil]) #wasn't a role
   end
@@ -22,7 +22,7 @@ class Method_call_test  < MiniTest::Unit::TestCase
     contracts ={}
     roles = Hash.new
     roles[:foo] = Hash.new
-    MethodCall.new(method_call, roles,contracts,nil).rewrite_call?
+    MethodCall.new(method_call, InterpretationContext.new(roles,contracts,nil,nil)).rewrite_call?
     assert_equal(1,contracts.length)
     assert_equal([:bar], contracts[:foo]) #wasn't a role
   end
@@ -32,7 +32,7 @@ class Method_call_test  < MiniTest::Unit::TestCase
     contracts ={}
     roles = Hash.new
     roles[:foo] = {:bar => nil}
-    MethodCall.new(method_call, roles,contracts,nil).rewrite_call?
+    MethodCall.new(method_call,  InterpretationContext.new(roles,contracts,nil,nil)).rewrite_call?
     assert_equal(0,contracts.length)
     assert_source_equal(get_method_call {self_foo_bar},method_call)
   end
@@ -47,15 +47,14 @@ class Method_call_test  < MiniTest::Unit::TestCase
     Bind.new(:r,:foo,block[3][3]).execute
 
     contracts ={}
-    roles = Hash.new
-    roles[:foo] = {:bar => nil}
+    roles = {:foo=> {:bar => nil}}
     methodcall1 = block[3][3][3]
     methodcall2 = block[3][3][4]
     expected1 = get_method_call {self_foo_bar}
     expected2 = get_method_call {foo.baz}
 
-    MethodCall.new(methodcall1, roles,contracts,{:r=>:foo}).rewrite_call?
-    MethodCall.new(methodcall2, roles,contracts,{:r=>:foo}).rewrite_call?
+    MethodCall.new(methodcall1, InterpretationContext.new(roles,contracts,{:r=>:foo},:role)).rewrite_call?
+    MethodCall.new(methodcall2, InterpretationContext.new(roles,contracts,{:r=>:foo},:role)).rewrite_call?
 
     assert_source_equal(expected2,methodcall2)
     assert_source_equal(expected1,methodcall1)

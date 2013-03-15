@@ -2,7 +2,7 @@ require_relative 'helper'
 require_relative 'method_call.rb'
 
 context :Expression, :transform do
-  initialize do |expression, roles, contracts|
+  initialize do |expression, interpretation_context|
     raise "No expression supplied" unless expression
     @block, @block_body = nil
     if expression && expression[0] == :iter
@@ -14,8 +14,7 @@ context :Expression, :transform do
         end
       end
     end
-    @roles = roles
-    @contracts = contracts
+    @interpretation_context = interpretation_context
     @expression = expression
   end
 
@@ -23,12 +22,13 @@ context :Expression, :transform do
     if expression
       block.transform
       if expression[0] == :call
-        MethodCall.new(expression,@roles,@contracts).rewrite_call?
+        MethodCall.new(expression,@interpretation_context).rewrite_call?
       end
-      expression.each { |exp| Expression.new(exp, roles, contracts).call} if expression.instance_of? Sexp
+      expression.each { |exp| Expression.new(exp, @interpretation_context)} if expression.instance_of? Sexp
     end
   end
 
+  role :interpretation_context do end
   role :expression do  end
   role :block_body do  end
   role :block do
@@ -44,7 +44,7 @@ context :Expression, :transform do
           expr = block[i+1]
           #find the block
           if expr && expr.length && expr[0] == :block
-            Expression.rewrite(exp,roles,contracts) if block.transform_bind?
+            Expression.rewrite(exp,@interpretation_context) if block.transform_bind?
           end
         end
       end

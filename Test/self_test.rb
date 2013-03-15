@@ -35,6 +35,8 @@ class Self_test < MiniTest::Unit::TestCase
     Self.new(ast,:role).execute
 
     expected = (get_sexp { bar[role] })[3]
+    refute_nil(ast)
+    refute_equal(0,ast.length)
     assert_source_equal(expected,ast)
   end
 end
