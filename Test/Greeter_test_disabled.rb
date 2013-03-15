@@ -20,7 +20,7 @@ class BasicTests < MiniTest::Unit::TestCase
 
   def test_base_class
     name = :MyDerivedContext
-    ctx,source = context name, Person do
+    ctx, source = context name, Person do
     end
     obj = MyDerivedContext.new
     obj.name = name
@@ -48,7 +48,7 @@ class BasicTests < MiniTest::Unit::TestCase
     name, role_name = :MyContextWithRoleAndArgs, :my_role
     ctx, source = Context::define name do
       role role_name do
-        role_go_do do |x,y|
+        role_go_do do |x, y|
 
         end
         role_go do |x|
@@ -192,9 +192,9 @@ end
 
 class TestExamples < MiniTest::Unit::TestCase
   def test_meter_example
-    meter = Meter.new Time::now, Position.new(1,2,0)
-    result = meter.call Position.new(2,4,1)
-    assert_equal(3,result.to_i)
+    meter = Meter.new Time::now, Position.new(1, 2, 0)
+    result = meter.call Position.new(2, 4, 1)
+    assert_equal(3, result.to_i)
   end
 end
 

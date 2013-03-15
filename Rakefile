@@ -7,4 +7,11 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-task :default => :test
+task :generate do |t|
+  require_relative './lib/maroon' #use the one in lib. That should be the stable one
+  Context::generate_file = true #generate files not just in memory classes
+  `git ls-files ./generated/`.split($/).grep(%r{(.)*.rb}).select {|f| p "del " + f.gsub(/\//,'\\')}
+  `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
+end
+
+task :default => [:generate,:test]

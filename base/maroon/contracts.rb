@@ -33,6 +33,8 @@ class ContextAsserter < ContextAsserterBase
   private
   def can_play?(role)
     required_methods = @contracts[role]
+    return true if !(required_methods && required_methods.length)
+
     methods = @obj.public_methods
     missing = required_methods.select do |rm|
       !methods.include? rm.to_sym

@@ -1,10 +1,13 @@
 require 'ripper'
+require 'ruby2ruby'
 
 module SourceAssertions
   def assert_source_equal(expected, actual)
-    expected_sexp = Ripper::sexp expected
-    actual_sexp = Ripper::sexp actual
-    assert_sexp_with_ident(expected_sexp, actual_sexp, "Expected #{expected} but got #{actual}")
+
+    expected_sexp = if expected.instance_of? Sexp then expected else Ripper::sexp expected end
+    actual_sexp =  if actual.instance_of? Sexp then actual else Ripper::sexp actual end
+    message = "Expected #{expected} but got #{actual}"
+    assert_sexp_with_ident(expected_sexp, actual_sexp, message)
     assert_equal(1,1) #just getting the correct assertion count
   end
 

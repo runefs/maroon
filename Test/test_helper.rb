@@ -1,2 +1,8 @@
 require 'minitest/autorun'
-require 'debugger'
+require 'sourcify'
+require_relative 'assertions'
+#require 'debugger'
+
+def get_sexp &b
+  b.to_sexp
+end

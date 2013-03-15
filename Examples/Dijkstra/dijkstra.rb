@@ -57,7 +57,6 @@ require './Examples/Dijkstra/Calculate_Shortest_Path.rb'
 #       design
 
 
-
 # --- Main Program: test driver
 #
 geometries = Geometry_1.new
@@ -74,11 +73,13 @@ path = CalculateShortestPath.new(geometries.root, geometries.destination, geomet
 print 'Path is: '
 last_node = nil
 path.each do |node|
-  if last_node != nil; print " - #{geometries.distances[Edge.new(node, last_node)]} - " end
+  if last_node != nil;
+    print " - #{geometries.distances[Edge.new(node, last_node)]} - "
+  end
   print "#{node.name}"
   last_node = node
 end
 print "\n"
 
 geometries = ManhattanGeometry2.new
-puts "distance is #{CalculateShortestDistance.new(geometries.root,  geometries).distance }"
+puts "distance is #{CalculateShortestDistance.new(geometries.root, geometries).distance }"

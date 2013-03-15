@@ -1,10 +1,14 @@
 Context::define :CalculateShortestDistance do
 
-  role :tentative_distance_values do end
-  role :path do end
+  role :tentative_distance_values do
+  end
+  role :path do
+  end
 
-  role :current do  end
-  role :destination do end
+  role :current do
+  end
+  role :destination do
+  end
 
 
   role :map do
@@ -44,14 +48,14 @@ Context::define :CalculateShortestDistance do
     @path = CalculateShortestPath.new(current, destination, map).path
     retval = 0
     previous_node = nil
-      path.reverse_each {|node|
-        if previous_node.nil?
-          retval = 0
-        else
-          retval += map.distance_between previous_node, node
-        end
-        previous_node = node
-      }
+    path.reverse_each { |node|
+      if previous_node.nil?
+        retval = 0
+      else
+        retval += map.distance_between previous_node, node
+      end
+      previous_node = node
+    }
     retval
   end
 

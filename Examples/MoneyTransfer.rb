@@ -21,7 +21,8 @@ Context::define :MoneyTransfer do
     end
   end
 
-  role :amount do end
+  role :amount do
+  end
 
   transfer do
     source.withdraw -amount
@@ -33,7 +34,7 @@ class MoneyTransfer
   def initialize(source, destination, amount)
     @source = source
     @destination = destination
-    @amount  = amount
+    @amount = amount
   end
 end
 class Account

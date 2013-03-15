@@ -15,7 +15,6 @@
 #
 
 
-
 # There are eight roles in the algorithm:
 #
 # pathTo, which is the interface to whatever accumulates the path
@@ -39,7 +38,7 @@
 #
 # Map is a DCI role. The role in this example is played by an
 # object representing a particular Manhattan geometry
- ctx,source = Context::define :CalculateShortestPath do
+ctx, source = Context::define :CalculateShortestPath do
   role :distance_labeled_graph_node do
     # Access to roles and other Context data
     tentative_distance_values do
@@ -58,17 +57,17 @@
   role :map do
     distance_between do |a, b|
       dist = @map.distances[Edge.new(a, b)]
-     # p "distance between #{a.name} and #{b.name} is #{dist}"
+      # p "distance between #{a.name} and #{b.name} is #{dist}"
       dist
     end
     next_down_the_street_from do |x|
       n = east_neighbor_of x
-     # p "next down the street from #{x.name} is #{n.name}"
+      # p "next down the street from #{x.name} is #{n.name}"
       n
     end
     next_along_the_avenue_from do |x|
       n = south_neighbor_of x
-     # p "next along the avenue from #{x.name} is #{n.name}"
+      # p "next along the avenue from #{x.name} is #{n.name}"
       n
     end
     origin do
@@ -79,11 +78,11 @@
       selection = nil
       @unvisited.each_key {
           |intersection|
-        bind :intersection=>:distance_labeled_graph_node
+        bind :intersection => :distance_labeled_graph_node
         if @unvisited[intersection]
           tentative_distance = intersection.tentative_distance
           if tentative_distance < min
-           # p "min distance is updated from #{min} to #{tentative_distance}"
+            # p "min distance is updated from #{min} to #{tentative_distance}"
             min = tentative_distance
             selection = intersection
           end
@@ -106,12 +105,16 @@
     unvisited_neighbors do
       retval = Array.new
       if @south_neighbor != nil
-        if unvisited[@south_neighbor] then retval << @south_neighbor end
+        if unvisited[@south_neighbor] then
+          retval << @south_neighbor
+        end
       end
       if @east_neighbor != nil
-        if unvisited[@east_neighbor] then retval << @east_neighbor end
+        if unvisited[@east_neighbor] then
+          retval << @east_neighbor
+        end
       end
-     # p "unvisited neighbors #{retval}"
+      # p "unvisited neighbors #{retval}"
       retval
     end
     tentative_distance do
@@ -119,7 +122,8 @@
       @tentative_distance_values[current]
     end
   end
-  role :unvisited do  end
+  role :unvisited do
+  end
 
 
 # This module serves to provide the methods both for the
@@ -131,11 +135,11 @@
       raise "self can't be nil" unless @neighbor_node
 
       if x < neighbor_node.tentative_distance
-       # p "updated tentative distance from #{neighbor_node.tentative_distance} to #{x}"
+        # p "updated tentative distance from #{neighbor_node.tentative_distance} to #{x}"
         neighbor_node.set_tentative_distance_to x
         :distance_was_udated
       else
-       # p "left tentative distance at #{neighbor_node.tentative_distance} instead of #{x}"
+        # p "left tentative distance at #{neighbor_node.tentative_distance} instead of #{x}"
         :distance_was_not_udated
       end
     end
@@ -151,7 +155,7 @@
       tentative_distance_values[@neighbor_node] = x
     end
   end
-  # This is the method that starts the work. Called from initialize.
+# This is the method that starts the work. Called from initialize.
 
   execute do |path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash|
     do_inits(path_vector, unvisited_hash, pathto_hash,
@@ -161,7 +165,7 @@
     # Calculate tentative distances of unvisited neighbors
 
     unvisited_neighbors = current.unvisited_neighbors
-   # p "#{unvisited_neighbors}"
+    # p "#{unvisited_neighbors}"
     if unvisited_neighbors != nil
       unvisited_neighbors.each {
           |neighbor|
@@ -173,9 +177,9 @@
         net_distance = tentative_distance + distance_between
 
         if neighbor.relable_node_as(net_distance) == :distance_was_udated
-         # p "set path"
+          # p "set path"
           pathTo[neighbor] = @current
-         # p "path #{@pathTo}"
+          # p "path #{@pathTo}"
         end
       }
     end
@@ -218,7 +222,7 @@
           # These initializations are directly from the description of the algorithm
           map.nodes.each { |node| @unvisited[node] = true }
           @unvisited.delete(map.origin)
-          map.nodes.each { |node| bind :node=>:distance_labeled_graph_node; node.set_tentative_distance_to(infinity) }
+          map.nodes.each { |node| bind :node => :distance_labeled_graph_node; node.set_tentative_distance_to(infinity) }
           tentative_distance_values[map.origin] = 0
 
           # The path array is kept in the outermost context and serves to store the
@@ -244,6 +248,7 @@
           @pathTo = pathto_hash
         end
       end
+
       # Since path_vector isn't set up, this is the first iteration of the recursion
 
       @tentative_distance_values = Hash.new
@@ -257,11 +262,11 @@
       # These initializations are directly from the description of the algorithm
       map.nodes.each { |node| @unvisited[node] = true }
       @unvisited.delete(map.origin)
-     # p "map #{map.nodes}"
+      # p "map #{map.nodes}"
       map.nodes.each { |node|
         bind :node => :distance_labeled_graph_node;
         node.set_tentative_distance_to(infinity)
-       # p "initialized node #{node.name}"
+        # p "initialized node #{node.name}"
       }
       tentative_distance_values[map.origin] = 0
 
@@ -297,12 +302,26 @@ class CalculateShortestPath
   def pathTo
     @pathTo
   end
-  def east_neighbor; @east_neighbor end
-  def south_neighbor; @south_neighbor end
-  def path; @path end
 
-  def destination; @destination end
-  def tentative_distance_values; @tentative_distance_values end
+  def east_neighbor;
+    @east_neighbor
+  end
+
+  def south_neighbor;
+    @south_neighbor
+  end
+
+  def path;
+    @path
+  end
+
+  def destination;
+    @destination
+  end
+
+  def tentative_distance_values;
+    @tentative_distance_values
+  end
 
   # This is a shortcut to information that really belongs in the Map.
   # To keep roles stateless, we hold the Map's unvisited structure in the
@@ -333,6 +352,7 @@ class CalculateShortestPath
 
     execute(path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash)
   end
+
   def each
     path.each { |node| yield node }
   end
@@ -350,5 +370,5 @@ class CalculateShortestPath
   end
 end
 
-File.open('CalculateShortestPath_generated.rb', 'w') {|f| f.write(source) }
+File.open('CalculateShortestPath_generated.rb', 'w') { |f| f.write(source) }
 

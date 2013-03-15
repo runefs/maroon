@@ -1,16 +1,6 @@
 # -*- encoding: utf-8 -*-
-require './lib/source_cleaner.rb'
-require './lib/rewriter.rb'
-
-class MethodInfo
-  def initialize(arguments, body)
-    @arguments = arguments
-    @body = body
-  end
-
-  attr_reader :arguments
-  attr_reader :body
-end
+require_relative '../generated/definitions'
+require_relative 'method_ info.rb'
 
 ##
 # The Context class is used to define a DCI context with roles and their role methods
@@ -48,7 +38,6 @@ end
 #License:: Same as for Ruby
 ##
 class Context
-  include Rewriter, SourceCleaner
   @roles
   @interactions
   @defining_role
@@ -71,9 +60,9 @@ class Context
     return ctx.send(:finalize, name, base_class, default_interaction)
   end
 
- def self.generate_file=(value)
-   @@generate_file = value
- end
+  def self.generate_file=(value)
+    @@generate_file = value && true
+  end
 
   def self.with_contracts=(value)
     raise 'make up your mind! disabling contracts during execution will result in undefined behavior' if @@with_contracts && !value
@@ -85,12 +74,21 @@ class Context
   end
 
   private
-  def generate_file=(value)
-    @generate_file = value
+  def generate_file=(value,&b)
+    if block_given?
+      role_or_interaction_method(:generate_file=,&b)
+    else
+      @generate_file = value
+    end
   end
   def generate_file
-    @generate_file || @@generate_file
+    if block_given?
+      role_or_interaction_method(:generate_file,&b)
+    else
+      @generate_file || @@generate_file
+    end
   end
+
   ##
   #Defines a role with the given name
   #role methods can be defined inside a block passed to this method
@@ -111,22 +109,27 @@ class Context
     @defining_role = nil
   end
 
-  def initialize &b
+  def initialize
     if block_given?
-      role_or_interaction_method(:initialize,&b)
-    else
+      return role_or_interaction_method(:initialize,&b)
+    end
       @roles = Hash.new
       @interactions = Hash.new
       @role_alias = Array.new
-    end
-
   end
 
   def methods
-    (@defining_role ? @roles[@defining_role] : @interactions)
+    if block_given?
+      role_or_interaction_method(:methods,&b)
+    else
+      (@defining_role ? @roles[@defining_role] : @interactions)
+    end
   end
 
   def finalize(name, base_class, default)
+    if block_given?
+      return role_or_interaction_method(:finalize,&b)
+    end
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
     code = generate_context_code(default, name)
@@ -144,7 +147,7 @@ class Context
           raise \'Contracts must be supplied\' unless value
           @@contracts = value
         end')
-      c.contracts=self.contracts
+      c.contracts={} #self.contracts
     end
     if generate_file
       complete = "class #{name}\r\n#{code}\r\nend"
@@ -169,13 +172,15 @@ class Context
   end
 
   def generate_context_code(default, name)
+    if block_given?
+      return role_or_interaction_method(:generate_context_code,&b)
+    end
     fields = ''
     getters = ''
     impl = ''
     interactions = ''
     @interactions.each do |method_name, method|
-      @defining_role = nil
-      interactions << "  #{method_info2method_definition(method_name, method)}"
+      interactions << "  #{method.build_as_context_method method_name, roles, contracts, nil}"
     end
     if default
       interactions << %{
@@ -197,10 +202,10 @@ class Context
     @roles.each do |role, methods|
       fields << "@#{role}\n"
       getters << "def #{role};@#{role} end\n"
-      methods.each do |method_name, method_source|
-        @defining_role = role
+      methods.each do |method_name, method_info|
         rewritten_method_name = "self_#{role}_#{method_name}"
-        definition = method_info2method_definition rewritten_method_name, method_source
+        definition = method_info.build_as_context_method rewritten_method_name, roles, contracts, role
+
         impl << "  #{definition}" if definition
       end
     end
@@ -211,8 +216,52 @@ class Context
   def role_or_interaction_method(method_name, &b)
     raise "method with out block #{method_name}" unless b
 
-    args, body = block2source &b
-    methods[method_name] = MethodInfo.new args, body
+    methods[method_name] = MethodInfoCtx.new &b
+  end
+
+  def contracts
+    if block_given?
+      return role_or_interaction_method(:contracts,&b)
+    end
+    (@contracts ||= {})
+  end
+
+  def role_aliases
+    if block_given?
+      return role_or_interaction_method(role_aliases,&b)
+    end
+    @alias_list if @alias_list
+    @alias_list = Hash.new
+    @role_alias.each { |aliases|
+      aliases.each { |k, v|
+        @alias_list[k] = v
+      }
+    }
+    @alias_list
+  end
+
+  def roles
+    if block_given?
+      return role_or_interaction_method(:roles,&b)
+    end
+    @cached_roles_and_alias_list if @cached_roles_and_alias_list
+    @roles unless @role_alias and @role_alias.length
+    @cached_roles_and_alias_list = Hash.new
+    @roles.each { |k, v|
+      @cached_roles_and_alias_list[k] = v
+    }
+    role_aliases.each { |k, v|
+      @cached_roles_and_alias_list[k] = @roles[v]
+    }
+    @cached_roles_and_alias_list
+  end
+
+  def add_alias (a, role_name)
+    if block_given?
+      return role_or_interaction_method(:add_alias,&b)
+    end
+    @cached_roles_and_alias_list, @alias_list = nil
+    @role_alias.last()[a] = role_name
   end
 
   alias method_missing role_or_interaction_method

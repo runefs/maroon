@@ -2,7 +2,7 @@ require 'sourcify'
 require 'sorcerer'
 
 module SourceCleaner
- private
+  private
   #Separates arguments from body
   def block2source(&block)
     source = block.to_sexp
@@ -12,7 +12,7 @@ module SourceCleaner
     return args, body
   end
 
- #GEts argument names as a comma separated list
+  #Gets argument names as a comma separated list
   def get_args(sexp)
     return nil unless sexp
     return sexp[1] if sexp[0] == :lasgn
@@ -24,12 +24,12 @@ module SourceCleaner
     args.join(',')
   end
 
- #Transforms a S-expression body to source
- def method_info2method_definition (method_name, method)
-    arguments, body  = method.arguments, method.body
+  #Transforms a S-expression body to source
+  def method_info2method_definition (method_name, method)
+    arguments, body = method.arguments, method.body
     transform_ast body
     block = Ruby2Ruby.new.process(body)
     args = "(#{arguments})" if arguments
     "\ndef #{method_name} #{args}\n#{block} end\n"
- end
+  end
 end

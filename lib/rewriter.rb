@@ -40,11 +40,13 @@ module Rewriter
     ast && ast[0] == :lvar
   end
 
-  def role_method_call(ast, method)
+  def role_method_call(ast, method_name)
+    raise "must supply a method name" unless method_name
+    return nil, nil unless ast
     role = get_role(ast) #is it a call to a role getter
     in_block = is_in_block? ast
     role_name = in_block ? role_aliases[ast[1]] : (ast[2] if role)
-    is_role_method = role && role.has_key?(method)
+    is_role_method = role && role.has_key?(method_name)
 
     return role_name, is_role_method
   end
@@ -166,9 +168,8 @@ module Rewriter
 # in the case where no role method is called on the role player
 # It's rewritten to an instance call on the context object if a role method is called
   def rewrite_self (ast)
-    ast.length.times do |i|
+    ast.each do |exp|
       raise 'Invalid argument. must be an expression' unless ast.instance_of? Sexp
-      exp = ast[i]
       if exp == :self
         ast[0] = :call
         ast[1] = nil
@@ -185,33 +186,32 @@ module Rewriter
 #rewrites the ast so that role method calls are rewritten to a method invocation on the context object rather than the role player
 #also does rewriting of binds in blocks
   def transform_ast(ast)
-    if ast
-      if @defining_role
-        rewrite_self ast
-      end
-      ast.length.times do |k|
-        exp = ast[k]
-        if exp
+    return if !ast || !(ast.instance_of? Sexp)
+
+    if @defining_role
+      rewrite_self ast
+    end
+    ast.each do |exp|
+      if exp and exp.instance_of? Sexp
+        if exp[0] == :iter
+          @role_alias.push Hash.new
+          transform_block exp
+          @role_alias.pop()
+        end
+        if exp[0] == :call
           method_name = exp[2]
-          role_name,is_role_method = role_method_call exp[1], exp[2]
-          if exp[0] == :iter
-            @role_alias.push Hash.new
-            transform_block exp
-            @role_alias.pop()
-          end
-          if exp[0] == :call
-            if is_role_method #role_name only returned if it's a role method call
-              exp[1] = nil #remove call to attribute
-              exp[2] = "self_#{role_name}_#{method_name}".to_sym
-            else # it's an instance method invocation
-              (contracts[role_name] ||= []) << method_name
-            end
-          end
-          if exp.instance_of? Sexp
-            transform_ast exp
+          role_name, is_role_method = role_method_call exp[1], method_name
+          if is_role_method
+            exp[1] = nil #remove call to attribute
+            exp[2] = "self_#{role_name}_#{method_name}".to_sym
+          else # it's an instance method invocation
+            (contracts[role_name] ||= []) << method_name
           end
         end
+        transform_ast exp
       end
     end
   end
+
 end
+

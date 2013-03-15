@@ -1,10 +1,17 @@
-def infinity; (2**(0.size * 8 -2) -1) end
+def infinity;
+  (2**(0.size * 8 -2) -1)
+end
+
 # Data classes
 Edge = Struct.new(:from, :to)
 
 class Node
   attr_reader :name
-  def initialize(n); @name = n end
+
+  def initialize(n)
+    ; @name = n
+  end
+
   def eql? (another_node)
     # Nodes are == equal if they have the same name. This is explicitly
     # defined here to call out the importance of the differnce between
@@ -12,7 +19,6 @@ class Node
     name == another_node.name
   end
 end
-
 
 
 #
@@ -25,12 +31,14 @@ class ManhattanGeometry
     @distances = Hash.new
   end
 
-  def nodes; @nodes end
+  def nodes;
+    @nodes
+  end
+
   def distances
     @distances
   end
 end
-
 
 
 #
@@ -49,7 +57,6 @@ class Geometry_1 < ManhattanGeometry
         nodes << Node.new(names[(i*3)+j])
       }
     }
-    
 
 
     # Aliases to help set up the grid. Grid is of Manhattan form:
@@ -114,11 +121,21 @@ class Geometry_1 < ManhattanGeometry
     @next_along_the_avenue_from.freeze
   end
 
-  def east_neighbor_of(a); @next_down_the_street_from[a] end
-  def south_neighbor_of(a); @next_along_the_avenue_from[a] end
+  def east_neighbor_of(a)
+    ; @next_down_the_street_from[a]
+  end
 
-  def root;  @node_a end
-  def destination;  @node_i end
+  def south_neighbor_of(a)
+    ; @next_along_the_avenue_from[a]
+  end
+
+  def root;
+    @node_a
+  end
+
+  def destination;
+    @node_i
+  end
 end
 
 
@@ -201,10 +218,20 @@ class ManhattanGeometry2 < ManhattanGeometry
     @next_along_the_avenue_from.freeze
   end
 
-  def east_neighbor_of(a); @next_down_the_street_from[a] end
-  def south_neighbor_of(a); @next_along_the_avenue_from[a] end
+  def east_neighbor_of(a)
+    ; @next_down_the_street_from[a]
+  end
 
-  def root;  @node_a end
-  def destination;  @node_k end
+  def south_neighbor_of(a)
+    ; @next_along_the_avenue_from[a]
+  end
+
+  def root;
+    @node_a
+  end
+
+  def destination;
+    @node_k
+  end
 end
 
