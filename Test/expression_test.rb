@@ -1,4 +1,4 @@
-require_relative '../generated/Expression'
+require_relative '../generated/MethodDefinition'
 require_relative 'test_helper'
 
 class Expression_test < MiniTest::Unit::TestCase
@@ -11,7 +11,7 @@ class Expression_test < MiniTest::Unit::TestCase
   end
   def assert_transform(expected,block)
     ctx = get_context
-    Expression.new(block,ctx).transform
+    MethodDefinition.new(block,ctx).transform
     assert_source_equal(expected,block)
     ctx
   end
@@ -78,7 +78,7 @@ class Expression_test < MiniTest::Unit::TestCase
     end)
 
     interpretation_context = get_context
-    Expression.new(block,interpretation_context).transform
+    MethodDefinition.new(block,interpretation_context).transform
     assert_source_equal(expected,block)
     contracts = interpretation_context.contracts
     assert_equal(2,contracts.length)

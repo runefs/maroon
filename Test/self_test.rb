@@ -18,11 +18,12 @@ class Self_test < MiniTest::Unit::TestCase
   def test_sunny
     ast = (get_sexp { self.bar })[3]
 
-    Self.new(ast,interpretation_context).execute
+    Self.new(ast[1],interpretation_context).execute
 
     expected = (get_sexp { role.bar })[3]
     assert_source_equal(expected,ast)
   end
+
   def test_indexer
     ast = (get_sexp {self[0]})[3]
 
@@ -31,10 +32,11 @@ class Self_test < MiniTest::Unit::TestCase
     expected = (get_sexp { role[0] })[3]
     assert_source_equal(expected,ast)
   end
+
   def test_as_index
     ast = (get_sexp {bar[self]})[3]
 
-    Self.new(ast,interpretation_context).execute
+    Self.new(ast[3][1],interpretation_context).execute
 
     expected = (get_sexp { bar[role] })[3]
     refute_nil(ast)

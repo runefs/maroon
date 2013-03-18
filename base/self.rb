@@ -61,10 +61,6 @@ context :Self, :execute do
           getter[3] = arglist
           arglist[0] = :arglist
           abstract_syntax_tree[1] = getter
-        else
-        abstract_syntax_tree.each do |exp|
-          Self.new(exp, @interpretation_context).execute if exp
-        end
         end
       end
     end
