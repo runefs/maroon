@@ -1,11 +1,12 @@
 require_relative 'helper'
 
 context :Self, :execute do
-  initialize do |abstract_syntax_tree, defining_role|
-    raise "Must have a defining role" unless defining_role
+  initialize do |abstract_syntax_tree, interpretationcontext|
+    raise "Interpretation context missing" unless interpretationcontext
+    raise "Must have a defining role" unless interpretationcontext.defining_role
 
     @abstract_syntax_tree = abstract_syntax_tree
-    @defining_role = defining_role
+    @interpretation_context = interpretationcontext
   end
 
   role :abstract_syntax_tree do
@@ -18,7 +19,10 @@ context :Self, :execute do
     end
 
   end
-  role :defining_role do
+  role :interpretation_context do
+    defining_role do
+      interpretation_context.defining_role
+    end
   end
 
   # rewrites a call to self in a role method to a call to the role player accessor
@@ -30,7 +34,7 @@ context :Self, :execute do
       if abstract_syntax_tree[0] == :self #if self is used in a role method, then rewrite to role getter
         abstract_syntax_tree[0] = :call
         abstract_syntax_tree[1] = nil
-        abstract_syntax_tree[2] = defining_role
+        abstract_syntax_tree[2] = interpretation_context.defining_role
         arglist = Sexp.new
         abstract_syntax_tree[3] = arglist
         arglist[0] = :arglist
@@ -41,7 +45,7 @@ context :Self, :execute do
             get_role = Sexp.new
             get_role[0] = :call
             get_role[1] = nil
-            get_role[2] = defining_role
+            get_role[2] = interpretation_context.defining_role
             arglist = Sexp.new
             get_role[3] = arglist
             arglist[0] = :arglist
@@ -52,30 +56,17 @@ context :Self, :execute do
           getter = new Sexp.new
           getter[0] = :call
           getter[1] = nil
-          getter[2] = defining_role
+          getter[2] = interpretation_context.defining_role
           arglist = Sexp.new
           getter[3] = arglist
           arglist[0] = :arglist
           abstract_syntax_tree[1] = getter
         else
-        abstract_syntax_tree.each {|exp|
-          Self.new(exp, defining_role).call}
+        abstract_syntax_tree.each do |exp|
+          Self.new(exp, @interpretation_context).execute if exp
+        end
         end
       end
     end
-  end
-end
-
-
-class Self
-  def initialize(abstract_syntax_tree, defining_role)
-    raise "Must have a defining role" unless defining_role
-
-    @abstract_syntax_tree = abstract_syntax_tree
-    @defining_role = defining_role
-  end
-
-  def self.rewrite(*args)
-    self.new(*args).call
   end
 end

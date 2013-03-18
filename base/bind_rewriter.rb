@@ -29,7 +29,7 @@ context :Bind, :execute do
     load_arg[0] = :lvar
     load_arg[1] = local
     assignment[2] = load_arg
-    block[1] = assignment
+    block.insert 1,assignment
 
     # assign role player to temp
     # notice this is prepended Ie. inserted in front of the role player to role field

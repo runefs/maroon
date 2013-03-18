@@ -37,8 +37,8 @@ context :MethodCall, :rewrite_call? do
 
       role,role_name = method.get_role_definition #is it a call to a role getter
 
-      in_block = method.call_in_block?
-      role_name = interpretation_context.role_aliases[role_name] if in_block
+      #in_block = method.call_in_block?
+      #role_name = interpretation_context.role_aliases[role_name] if in_block
       is_role_method = role && role.has_key?(method_name)
 
       return role_name, is_role_method
@@ -48,12 +48,22 @@ context :MethodCall, :rewrite_call? do
   rewrite_call? do
     method_name = method[2]
     if method[0] == :call
-      role_name, is_role_method = method.role_method_call? method_name
-      if is_role_method #role_name only returned if it's a role method call
-        method[1] = nil #remove call to attribute
-        method[2] = "self_#{role_name}_#{method_name}".to_sym
-      else # it's an instance method invocation
-        (interpretation_context.contracts[role_name] ||= []) << method_name
+      if method[1] == nil && method.length < 5 && method[3][0] == :arglist && method[3].length == 1
+        #accessing a role field?
+        is_role = interpretation_context.roles.has_key? method[3]
+        method[3] = ":@#{method[3]}" if is_role
+      else
+        role_name, is_role_method = method.role_method_call? method_name
+        if is_role_method #role_name only returned if it's a role method call
+          method[1] = nil #remove call to attribute
+          method[2] = "self_#{role_name}_#{method_name}".to_sym
+        else # it's an instance method invocation
+          if interpretation_context.roles.has_key? role_name
+            contract_methods = (interpretation_context.contracts[role_name] ||= {})
+            contract_methods[method_name] ||= 0
+            contract_methods[method_name] += 1
+          end
+        end
       end
     else
       p "method[0] was #{method[0]}"

@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require_relative 'method_ info.rb'
+require_relative 'method_info.rb'
 
 ##
 # The Context class is used to define a DCI context with roles and their role methods
@@ -36,7 +36,7 @@ require_relative 'method_ info.rb'
 #Author:: Rune Funch Søltoft (funchsoltoft@gmail.com)
 #License:: Same as for Ruby
 ##
-class Context
+class Context_base
   @roles
   @interactions
   @defining_role

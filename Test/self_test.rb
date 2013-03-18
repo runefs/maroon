@@ -12,11 +12,13 @@ class Self_test < MiniTest::Unit::TestCase
      assert_instance_of(Sexp,abstract_syntax_tree[3])
      assert_equal(abstract_syntax_tree[3][0], :arglist)
   end
+  def interpretation_context
+    InterpretationContext.new({:role=>{}},nil,nil,:role)
+  end
   def test_sunny
     ast = (get_sexp { self.bar })[3]
-    defining_role = :role
 
-    Self.new(ast,defining_role).execute
+    Self.new(ast,interpretation_context).execute
 
     expected = (get_sexp { role.bar })[3]
     assert_source_equal(expected,ast)
@@ -24,7 +26,7 @@ class Self_test < MiniTest::Unit::TestCase
   def test_indexer
     ast = (get_sexp {self[0]})[3]
 
-    Self.new(ast,:role).execute
+    Self.new(ast,interpretation_context).execute
 
     expected = (get_sexp { role[0] })[3]
     assert_source_equal(expected,ast)
@@ -32,7 +34,7 @@ class Self_test < MiniTest::Unit::TestCase
   def test_as_index
     ast = (get_sexp {bar[self]})[3]
 
-    Self.new(ast,:role).execute
+    Self.new(ast,interpretation_context).execute
 
     expected = (get_sexp { bar[role] })[3]
     refute_nil(ast)

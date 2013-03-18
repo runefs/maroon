@@ -2,35 +2,66 @@ require_relative 'helper'
 require_relative 'method_call.rb'
 
 context :Expression, :transform do
-  initialize do |expression, interpretation_context|
-    raise "No expression supplied" unless expression
-    @block, @block_body = nil
-    if expression && expression[0] == :iter
-      (expression.length-1).times do |i|
-        expr = expression[i+1]
+  initialize do |exp, interpretationcontext|
+    require_relative 'ImmutableQueue'
+    raise "No expression supplied" unless exp
+    raise "No interpretation context" unless interpretationcontext
+
+    @interpretation_context = interpretationcontext
+    @expressions = ImmutableQueue::empty.push exp
+    rebind
+  end
+  rebind do
+    @exp,@expressions = expressions.pop
+    @block, @potential_bind = nil
+    if @exp && (@exp.instance_of? Sexp) && @exp[0] == :iter
+      @exp[1..-1].each do |expr|
         #find the block
         if expr && expr.length && expr[0] == :block
-          @block, @block_body = expr, expr[1]
+          @block, @potential_bind = expr, expr[1]
         end
       end
     end
-    @interpretation_context = interpretation_context
-    @expression = expression
+    @expressions = if @exp.instance_of? Sexp then @expressions.push_array(exp) else @expressions end
   end
-
   transform do
-    if expression
+    #could have been recursive but the stack depth isn't enough for even simple contexts
+    until expressions.empty?
+
       block.transform
-      if expression[0] == :call
-        MethodCall.new(expression,@interpretation_context).rewrite_call?
+      if exp
+        is_indexer = exp[0] == :call && exp[1] == nil && (exp[2] == :[] || exp[2] == :[]=)
+        if  is_indexer || (exp[0] == :self)
+          Self.new(exp,interpretation_context).execute
+        end
+        if exp[0] == :call
+            MethodCall.new(exp,interpretation_context).rewrite_call?
+        end
       end
-      expression.each { |exp| Expression.new(exp, @interpretation_context)} if expression.instance_of? Sexp
+      rebind
     end
   end
 
-  role :interpretation_context do end
-  role :expression do  end
-  role :block_body do  end
+  role :interpretation_context do
+    addalias do |key,value|
+      self.role_aliases[key] = value
+    end
+  end
+  role :exp do end
+  role :expressions do
+    empty? do
+      self == ImmutableQueue::empty
+    end
+  end
+  role :potential_bind do
+    is_bind? do
+      potential_bind &&
+          potential_bind.length &&
+          (potential_bind[0] == :call &&
+              potential_bind[1] == nil &&
+              potential_bind[2] == :bind)
+    end
+  end
   role :block do
     ##
     #Transforms blocks as needed
@@ -39,14 +70,10 @@ context :Expression, :transform do
     #-Rewrites role method calls to instance method calls on the context
     ##
     transform do
-      if block && block[0] == :iter
-        (block.length-1).times do |i|
-          expr = block[i+1]
-          #find the block
-          if expr && expr.length && expr[0] == :block
-            Expression.rewrite(exp,@interpretation_context) if block.transform_bind?
+      if block
+          if block.transform_bind?
+            @expressions.push_array(block[1..-1])
           end
-        end
       end
     end
     ##
@@ -54,15 +81,11 @@ context :Expression, :transform do
     ##
     transform_bind? do
       #check if the first call is a bind call
-      if block_body && block_body.length && (block_body[0] == :call && block_body[1] == nil && block_body[2] == :bind)
-        block.rewrite
-      else
-        false
-      end
+      potential_bind.is_bind? && block.rewrite
     end
     rewrite do
       changed = false
-      argument_list = block_body[3]
+      argument_list = potential_bind[3]
       if argument_list && argument_list[0] == :arglist
         arguments = argument_list[1]
         if arguments && arguments[0] == :hash
@@ -80,10 +103,10 @@ context :Expression, :transform do
             if aliased_role.instance_of? Sexp
               aliased_role = aliased_role[1]
             end
-            raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and @roles.has_key? aliased_role
-            add_alias local, aliased_role
+            raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and interpretation_context.roles.has_key? aliased_role
+            interpretation_context.addalias local, aliased_role
             #replace bind call with assignment of iteration variable to role field
-            Bind.rewrite local, aliased_role, block
+            Bind.new(local, aliased_role, block).execute
             changed = true
           end
         end
