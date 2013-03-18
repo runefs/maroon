@@ -12,7 +12,7 @@ module SourceAssertions
   end
 
   def is_terminal(sexp)
-    sexp == :@ident || sexp == :@int || sexp == :@ivar
+    sexp == :@ident || sexp == :@int || sexp == :@ivar || :@tstring_content
   end
 
   def assert_sexp_with_ident(expected, actual, message)
