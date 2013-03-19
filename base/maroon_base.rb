@@ -212,10 +212,10 @@ class Context_base
     "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
   end
 
-  def role_or_interaction_method(method_name, &b)
+  def role_or_interaction_method(method_name,on_self = false, &b)
     raise "method with out block #{method_name}" unless b
 
-    methods[method_name] = MethodInfoCtx.new &b
+    methods[method_name] = MethodInfoCtx.new on_self, &b
   end
 
   def contracts

@@ -10,17 +10,13 @@ context :ImmutableStack do
    end
 
    initialize do |h,t|
-     unless self.class.method_defined? :empty
-       self.class.class_eval do
-         def self.empty
-           @@empty ||= self.new(nil,nil)
-         end
-       end
-     end
-
      @head = h
      @tail = t
      self.freeze
+   end
+
+   empty self do
+     @@empty ||= self.new(nil,nil)
    end
 
    each do

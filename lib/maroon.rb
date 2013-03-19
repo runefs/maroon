@@ -3,13 +3,15 @@ require './lib/source_cleaner.rb'
 require './lib/rewriter.rb'
 
 class MethodInfo
-  def initialize(arguments, body)
+  def initialize(arguments, body, on_self)
     @arguments = arguments
     @body = body
+    @on_self = on_self
   end
 
   attr_reader :arguments
   attr_reader :body
+  attr_reader :on_self
 end
 
 ##
@@ -208,11 +210,11 @@ class Context
     "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
   end
 
-  def role_or_interaction_method(method_name, &b)
+  def role_or_interaction_method(method_name, on_self = nil, &b)
     raise "method with out block #{method_name}" unless b
 
     args, body = block2source &b
-    methods[method_name] = MethodInfo.new args, body
+    methods[method_name] = MethodInfo.new args, body, on_self
   end
 
   alias method_missing role_or_interaction_method

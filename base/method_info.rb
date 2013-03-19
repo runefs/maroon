@@ -3,9 +3,12 @@ require 'sorcerer'
 require_relative 'helper'
 
 context :MethodInfoCtx do
-  initialize do |block_source|
+  initialize do |on_self,block_source|
+    @on_self = on_self
     @block_source = block_source
   end
+
+  role :on_self do end
 
   role :block_source do
     get_arguments do
@@ -33,6 +36,7 @@ context :MethodInfoCtx do
     MethodDefinition.new(block_source.body,interpretation_context).transform
     block = Ruby2Ruby.new.process(block_source.body)
     args = block_source.arguments ? "(#{block_source.arguments})" : nil
-    "\ndef #{context_method_name}#{args}\n#{block} end\n"
+    on = if on_self then "self." else "" end
+    "\ndef #{on}#{context_method_name}#{args}\n#{block} end\n"
   end
 end

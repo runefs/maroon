@@ -30,6 +30,7 @@ module SourceCleaner
     transform_ast body
     block = Ruby2Ruby.new.process(body)
     args = "(#{arguments})" if arguments
-    "\ndef #{method_name} #{args}\n#{block} end\n"
+    on = if method.on_self then "self." else "" end
+    "\ndef #{on}#{method_name} #{args}\n#{block} end\n"
   end
 end
