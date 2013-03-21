@@ -19,7 +19,7 @@ module SourceCleaner
     sexp = sexp[1][1..-1] # array or arguments
     args = []
     sexp.each { |e|
-      args << e[1]
+      args << if e[0] == :splat then "*#{e[1][1]}" else e[1] end
     }
     args.join(',')
   end
@@ -29,7 +29,11 @@ module SourceCleaner
     arguments, body = method.arguments, method.body
     transform_ast body
     block = Ruby2Ruby.new.process(body)
+    if method.block
+      arguments = arguments ? "#{arguments},&#{method.block}" : "&#{method.block}"
+    end
     args = "(#{arguments})" if arguments
+
     on = if method.on_self then "self." else "" end
     "\ndef #{on}#{method_name} #{args}\n#{block} end\n"
   end

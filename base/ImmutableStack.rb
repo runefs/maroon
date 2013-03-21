@@ -9,12 +9,6 @@ context :ImmutableStack do
      ImmutableStack.new element, self
    end
 
-   initialize do |h,t|
-     @head = h
-     @tail = t
-     self.freeze
-   end
-
    empty self do
      @@empty ||= self.new(nil,nil)
    end
@@ -26,6 +20,12 @@ context :ImmutableStack do
        h,t = t.pop
        yield h
      end
+   end
+
+   initialize do |h,t|
+     @head = h
+     @tail = t
+     self.freeze
    end
 end
 

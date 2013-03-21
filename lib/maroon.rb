@@ -6,12 +6,22 @@ class MethodInfo
   def initialize(arguments, body, on_self)
     @arguments = arguments
     @body = body
-    @on_self = on_self
+    if on_self.instance_of? Hash
+      @block = on_self[:block]
+      @on_self = on_self[:self]
+      @private = on_self[:private]
+    else
+      @on_self = on_self
+    end
+
+    self.freeze
   end
 
   attr_reader :arguments
   attr_reader :body
   attr_reader :on_self
+  attr_reader :block
+  attr_reader :private
 end
 
 ##
@@ -90,8 +100,12 @@ class Context
   def generate_file=(value)
     @generate_file = value
   end
-  def generate_file
-    @generate_file || @@generate_file
+  def generate_file(*args,&b)
+    if block_given?
+      role_or_interaction_method(:generate_file,&b)
+    else
+      @generate_file || @@generate_file
+    end
   end
   ##
   #Defines a role with the given name
@@ -113,7 +127,7 @@ class Context
     @defining_role = nil
   end
 
-  def initialize &b
+  def initialize(&b)
     if block_given?
       role_or_interaction_method(:initialize,&b)
     else
@@ -121,19 +135,21 @@ class Context
       @interactions = Hash.new
       @role_alias = Array.new
     end
-
   end
 
-  def methods
-    (@defining_role ? @roles[@defining_role] : @interactions)
+  def methods(&b)
+      return role_or_interaction_method(:methods,&b)     if block_given?
+      (@defining_role ? @roles[@defining_role] : @interactions)
   end
 
-  def finalize(name, base_class, default)
-    c = base_class ? (Class.new base_class) : Class.new
-    Kernel.const_set name, c
+  def finalize(*args,&b)
+    return role_or_interaction_method(:finalize,&b) if block_given?
+
+    name, base_class, default = *args
     code = generate_context_code(default, name)
     if @@with_contracts
-      c.class_eval('def self.assert_that(obj)
+      code += '
+        def self.assert_that(obj)
           ContextAsserter.new(self.contracts,obj)
         end
         def self.refute_that(obj)
@@ -145,15 +161,17 @@ class Context
         def self.contracts=(value)
           raise \'Contracts must be supplied\' unless value
           @@contracts = value
-        end')
-      c.contracts=self.contracts
+        end'
     end
     if generate_file
       complete = "class #{name}\r\n#{code}\r\nend"
       File.open("./generated/#{name}.rb", 'w') { |f| f.write(complete) }
       complete
     else
+      c = base_class ? (Class.new base_class) : Class.new
+      Kernel.const_set name, c
       temp = c.class_eval(code)
+      c.contracts=self.contracts
       (temp || c)
     end
   end
@@ -169,15 +187,23 @@ class Context
     ctx.instance_eval &block
     return base_class, ctx, default_interaction, name
   end
-
-  def generate_context_code(default, name)
+  def private
+    @private = true
+  end
+  def generate_context_code(*args,&b)
+    return role_or_interaction_method(:generate_context_code,&b) if block_given?
+    default, name = *args
     fields = ''
-    getters = ''
     impl = ''
     interactions = ''
     @interactions.each do |method_name, method|
       @defining_role = nil
-      interactions << "  #{method_info2method_definition(method_name, method)}"
+      definition = "  #{method_info2method_definition(method_name, method)}"
+      if method.private
+        impl << definition
+      else
+        interactions << definition
+      end
     end
     if default
       interactions << %{
@@ -197,8 +223,7 @@ class Context
     end
 
     @roles.each do |role, methods|
-      fields << "@#{role}\n"
-      getters << "def #{role};@#{role} end\n"
+      fields << "attr_reader :#{role}\n"
       methods.each do |method_name, method_source|
         @defining_role = role
         rewritten_method_name = "self_#{role}_#{method_name}"
@@ -207,13 +232,22 @@ class Context
       end
     end
 
-    "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
+    "#{interactions}\n  private\n#{fields}\n#{impl}\n"
   end
 
   def role_or_interaction_method(method_name, on_self = nil, &b)
+    unless method_name.instance_of? Symbol
+      on_self = method_name
+      method_name = :role_or_interaction_method
+    end
     raise "method with out block #{method_name}" unless b
 
     args, body = block2source &b
+    if on_self.instance_of? Hash
+      on_self[:private] ||= @private
+    else
+      on_self = {:self=>on_self,:private => @private}
+    end
     methods[method_name] = MethodInfo.new args, body, on_self
   end
 

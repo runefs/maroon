@@ -1,5 +1,4 @@
 #Thanks to Ted Milken for updating the original example
-require_relative '../generated/definitions'
 require_relative '../base/maroon_base.rb'
 #require_relative '../base/maroon/kernel.rb'
 #require_relative '../base/maroon/contracts.rb'
