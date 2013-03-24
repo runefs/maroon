@@ -59,29 +59,30 @@ Context::define :Context do
     return ctx.send(:finalize, name, base_class, default_interaction)
   end
 
-  do_generate_file self do
-    @@generate_file = true
+  generate_files_in self do |folder|
+    @@generate_file_path = folder
   end
 
   private
-
-
-  with_contracts self do |value|
+  with_contracts self do |*args|
+    return @@with_contracts if args.length == 0
+    value = args[0]
     raise 'make up your mind! disabling contracts during execution will result in undefined behavior' if @@with_contracts && !value
-    @@with_contracts = value
+    @@with_contracts = value[0]
   end
 
-  with_contracts self do
-    @@with_contracts
+  generate_files_in :block=>:b do |*args|
+    return role_or_interaction_method(:generate_files_in,*args,&b) if block_given?
+    @generate_file_path = args[0]
   end
 
-
-  generate_file do |value|
-    @generate_file = value
+  generate_file :block=>:b do |*args|
+    return role_or_interaction_method(:generate_file,*args,&b) if block_given?
+    @@generate_file_path && @generate_file_path
   end
-
-  generate_file do
-    @generate_file || @@generate_file
+  generated_files_folder :block=>:b do |*args|
+    return role_or_interaction_method(:generated_files_folder,*args,&b) if block_given?
+    @generate_file_path || @@generate_file_path
   end
   ##
   #Defines a role with the given name
@@ -94,8 +95,9 @@ Context::define :Context do
   #       end
   #The above code defines a role called 'who' with a role method called say
   ##
-  def role(role_name)
-    raise 'Argument role_name must be a symbol' unless role_name.instance_of? Symbol
+  role :block=>:b do |*args|
+    role_name = args[0]
+    return role_or_interaction_method(:role,*args,&b) if args.length != 1 or not (role_name.instance_of? Symbol)
 
     @defining_role = role_name
     @roles[role_name] = Hash.new
@@ -103,9 +105,9 @@ Context::define :Context do
     @defining_role = nil
   end
 
-  def initialize &b
+  initialize :block=>:b do |*args|
     if block_given?
-      role_or_interaction_method(:initialize,&b)
+      role_or_interaction_method(:initialize,*args,&b)
     else
       @roles = Hash.new
       @interactions = Hash.new
@@ -114,8 +116,19 @@ Context::define :Context do
 
   end
 
-  def methods
-    (@defining_role ? @roles[@defining_role] : @interactions)
+  get_method :block=>:b do |*args|
+    return role_or_interaction_method(:get_methods,*args,&b) if block_given?
+    name = args[0]
+    sources = (@defining_role ? @roles[@defining_role] : @interactions)[name]
+    sources = [] if sources == nil
+    (@defining_role ? @roles[@defining_role] : @interactions)[name] = (sources.instance_of? Array) ? sources : [sources]
+  end
+
+  add_method :block=>:b do |*args|
+    return role_or_interaction_method(:add_methods,*args,&b) if block_given?
+    name,method = *args
+    sources = get_method(name)
+    sources << method
   end
 
   finalize do|name, base_class, default|
@@ -140,7 +153,7 @@ Context::define :Context do
     end
     if generate_file
       complete = "class #{name}\r\n#{code}\r\nend"
-      File.open("./generated/#{name}.rb", 'w') { |f| f.write(complete) }
+      File.open("./#{generated_files_path}/#{name}.rb", 'w') { |f| f.write(complete) }
       complete
     else
       temp = c.class_eval(code)

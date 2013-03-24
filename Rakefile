@@ -13,9 +13,24 @@ task :generate do |t|
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 
+#execute as with command line to make memory spaces independent
 task :build_lib_setup do |t|
-  require_relative './generated/build' #use the one in lib. That should be the stable one
-  Context::do_generate_file #generate files not just in memory classes
+  generate_out = `rake generate`
+  raise generate_out if generate_out and generate_out != ''
+  test_res = {}
+  test_out = `rake test`
+  test_out.split(/[\n,]/)[-5..-1].each do |e|
+    pair = e.strip.split(/\s/)
+    test_res[pair[-1].to_sym] = pair[0].to_i
+  end
+  raise test_out if (test_res[:failures] + test_res[:errors] != 0)
+  generate_out = `rake build_generate`
+  raise generate_out if generate_out and generate_out != ''
+end
+
+task :build_generate do |t|
+  require_relative './generated/build' #use the one previously generated
+  Context::generate_files_in('generated') #generate files
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 

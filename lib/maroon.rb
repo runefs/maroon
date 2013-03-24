@@ -69,7 +69,7 @@ class Context
   @cached_roles_and_alias_list
   @@with_contracts = false
   @generate_file
-  @@generate_file
+  @@generate_file = false
 
   #define is the only exposed method and can be used to define a context (class)
   #if maroon/kernel is required calling context of Context::define are equivalent
@@ -102,7 +102,7 @@ class Context
   end
   def generate_file(*args,&b)
     if block_given?
-      role_or_interaction_method(:generate_file,&b)
+      role_or_interaction_method(:generate_file,*args,&b)
     else
       @generate_file || @@generate_file
     end
@@ -118,8 +118,9 @@ class Context
   #       end
   #The above code defines a role called 'who' with a role method called say
   ##
-  def role(role_name)
-    raise 'Argument role_name must be a symbol' unless role_name.instance_of? Symbol
+  def role(*args,&b)
+    return role_or_interaction_method(:role,*args,&b) if args.length != 1 or not (args[0].instance_of? Symbol)
+    role_name = args[0]
 
     @defining_role = role_name
     @roles[role_name] = Hash.new
@@ -127,9 +128,9 @@ class Context
     @defining_role = nil
   end
 
-  def initialize(&b)
+  def initialize(*args,&b)
     if block_given?
-      role_or_interaction_method(:initialize,&b)
+      role_or_interaction_method(:initialize,*args,&b)
     else
       @roles = Hash.new
       @interactions = Hash.new
@@ -137,9 +138,19 @@ class Context
     end
   end
 
-  def methods(&b)
-      return role_or_interaction_method(:methods,&b)     if block_given?
-      (@defining_role ? @roles[@defining_role] : @interactions)
+  def get_method(*args,&b)
+    return role_or_interaction_method(:get_methods,*args,&b) if block_given?
+    name = args[0]
+    sources = (@defining_role ? @roles[@defining_role] : @interactions)[name]
+    sources = [] if sources == nil
+    (@defining_role ? @roles[@defining_role] : @interactions)[name] = (sources.instance_of? Array) ? sources : [sources]
+  end
+
+  def add_method(*args,&b)
+    return role_or_interaction_method(:add_methods,*args,&b) if block_given?
+    name,method = *args
+    sources = get_method(name)
+    sources << method
   end
 
   def finalize(*args,&b)
@@ -171,7 +182,7 @@ class Context
       c = base_class ? (Class.new base_class) : Class.new
       Kernel.const_set name, c
       temp = c.class_eval(code)
-      c.contracts=self.contracts
+      c.contracts=self.contracts if c.method_defined? :contracts=
       (temp || c)
     end
   end
@@ -196,13 +207,15 @@ class Context
     fields = ''
     impl = ''
     interactions = ''
-    @interactions.each do |method_name, method|
-      @defining_role = nil
-      definition = "  #{method_info2method_definition(method_name, method)}"
-      if method.private
-        impl << definition
-      else
-        interactions << definition
+    @interactions.each do |method_name, methods|
+      methods.each do |method|
+        @defining_role = nil
+        definition = "  #{method_info2method_definition(method_name, method)}"
+        if method.private
+          impl << definition
+        else
+          interactions << definition
+        end
       end
     end
     if default
@@ -224,11 +237,13 @@ class Context
 
     @roles.each do |role, methods|
       fields << "attr_reader :#{role}\n"
-      methods.each do |method_name, method_source|
-        @defining_role = role
-        rewritten_method_name = "self_#{role}_#{method_name}"
-        definition = method_info2method_definition rewritten_method_name, method_source
-        impl << "  #{definition}" if definition
+      methods.each do |method_name, method_sources|
+        method_sources.each do |method_source|
+          @defining_role = role
+          rewritten_method_name = "self_#{role}_#{method_name}"
+          definition = method_info2method_definition rewritten_method_name, method_source
+          impl << "  #{definition}" if definition
+        end
       end
     end
 
@@ -248,7 +263,7 @@ class Context
     else
       on_self = {:self=>on_self,:private => @private}
     end
-    methods[method_name] = MethodInfo.new args, body, on_self
+    add_method(method_name, (MethodInfo.new args, body, on_self))
   end
 
   alias method_missing role_or_interaction_method
