@@ -13,11 +13,12 @@ task :generate do |t|
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 
-task :build_lib do |t|
+task :build_lib_setup do |t|
   require_relative './generated/build' #use the one in lib. That should be the stable one
-  Context::generate_file = true #generate files not just in memory classes
+  Context::do_generate_file #generate files not just in memory classes
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 
 task :default => [:generate,:test]
-task :build_lib => [:build,:test]
+
+task :build_lib => [:build_lib_setup,:test]

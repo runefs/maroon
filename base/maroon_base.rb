@@ -59,10 +59,12 @@ Context::define :Context do
     return ctx.send(:finalize, name, base_class, default_interaction)
   end
 
-  private
-  generate_file self do |value|
-    @@generate_file = value
+  do_generate_file self do
+    @@generate_file = true
   end
+
+  private
+
 
   with_contracts self do |value|
     raise 'make up your mind! disabling contracts during execution will result in undefined behavior' if @@with_contracts && !value
