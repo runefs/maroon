@@ -1,8 +1,4 @@
-require 'sourcify'
-require 'sorcerer'
-require_relative 'helper'
-
-context :MethodInfoCtx do
+context :MethodInfo do
   initialize do |on_self,block_source|
     if on_self.instance_of? Hash
       @block = on_self[:block]

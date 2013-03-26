@@ -1,9 +1,8 @@
-require_relative 'helper'
 context :ImmutableStack do
    role :head do end
    role :tail do end
    pop do
-     [head,tail]
+     [@head,@tail]
    end
    push do |element|
      ImmutableStack.new element, self

@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-require_relative '../lib/maroon'
 
 ##
 # The Context class is used to define a DCI context with roles and their role methods
@@ -112,8 +111,14 @@ Context::define :Context do
       @roles = Hash.new
       @interactions = Hash.new
       @role_alias = Array.new
+      @contracts = Hash.new
     end
 
+  end
+
+  current_interpretation_context :block=>:b do |*args|
+    return role_or_interaction_method(:current_interpretation_context,*args,&b) if block_given?
+    InterpretationContext.new(roles,contracts,role_alias,nil)
   end
 
   get_method :block=>:b do |*args|
@@ -123,6 +128,8 @@ Context::define :Context do
     sources = [] if sources == nil
     (@defining_role ? @roles[@defining_role] : @interactions)[name] = (sources.instance_of? Array) ? sources : [sources]
   end
+
+  role :contracts do end
 
   add_method :block=>:b do |*args|
     return role_or_interaction_method(:add_methods,*args,&b) if block_given?
@@ -177,9 +184,11 @@ Context::define :Context do
     getters = ''
     impl = ''
     interactions = ''
-    @interactions.each do |method_name, method|
-      @defining_role = nil
-      interactions << "  #{method_info2method_definition(method_name, method)}"
+    @interactions.each do |method_name, methods|
+      methods.each do |method|
+        @defining_role = nil
+        interactions << "  #{method.build_as_context_method method_name,current_interpretation_context}"
+      end
     end
     if default
       interactions << %{
@@ -203,7 +212,7 @@ Context::define :Context do
       methods.each do |method_name, method_source|
         @defining_role = role
         rewritten_method_name = "self_#{role}_#{method_name}"
-        definition = method_info2method_definition rewritten_method_name, method_source
+        definition = method_source.build_as_context_method rewritten_method_name,current_interpretation_context
         impl << "  #{definition}" if definition
       end
     end
@@ -211,15 +220,15 @@ Context::define :Context do
     "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
   end
 
-  role_or_interaction_method({:block => :b}) do |method_name, on_self|
+  role_or_interaction_method({:block => :b}) do |*arguments|
+    method_name, on_self = *arguments
     unless method_name.instance_of? Symbol
       on_self = method_name
       method_name = :role_or_interaction_method
     end
 
-    raise "method with out block #{method_name}" unless b
+    raise "method with out block #{method_name}" unless block_given?
 
-    args, body = block2source &b
-    methods[method_name] = MethodInfo.new args, body, on_self
+    add_method(method_name,MethodInfo.new(on_self, b))
   end
 end

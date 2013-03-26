@@ -1,5 +1,3 @@
-require_relative 'helper'
-
 context :Self, :execute do
   initialize do |abstract_syntax_tree, interpretationcontext|
     raise "Interpretation context missing" unless interpretationcontext

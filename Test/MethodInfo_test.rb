@@ -1,5 +1,5 @@
 require 'test/unit'
-require_relative '../generated/MethodInfoCtx'
+require_relative '../generated/MethodInfo'
 require 'ripper'
 require_relative 'test_helper'
 

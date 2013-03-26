@@ -1,5 +1,3 @@
-require_relative 'helper'
-
 context :Bind, :execute do
   role :block do
   end

@@ -1,4 +1,3 @@
-
 context :MethodCall, :rewrite_call? do
   role :interpretation_context do
     contracts do

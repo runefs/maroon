@@ -1,6 +1,3 @@
-require_relative 'helper'
-require_relative 'method_call.rb'
-
 context :MethodDefinition, :transform do
   initialize do |exp, interpretationcontext|
     require_relative 'ImmutableQueue'
