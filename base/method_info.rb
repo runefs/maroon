@@ -1,5 +1,7 @@
 context :MethodInfo do
   initialize do |on_self,block_source|
+    raise "Must be S-Expressions" unless block_source.instance_of? Sexp
+
     if on_self.instance_of? Hash
       @block = on_self[:block]
       @on_self = on_self[:self]
@@ -18,10 +20,12 @@ context :MethodInfo do
       sexp = block_source[2]
       return nil unless sexp
       return sexp[1] if sexp[0] == :lasgn
-      sexp = sexp[1][1..-1] # array of arguments
+      return [] if sexp[1] == nil
+      sexp = sexp[1..-1] # array of arguments
       args = []
       sexp.each { |e|
-        args << (if e[0] == :splat then "*#{e[1][1]}" else e[1] end)
+
+        args << ((e.instance_of? Symbol) ? e : (if e[0] == :splat then "*#{e[1][1]}" else e[1] end))
       }
       if block
         b = "&#{block}"

@@ -1,9 +1,10 @@
-class MethodCall
+class MethodCall
+
   
 def rewrite_call? 
 method_name = method[2]
 if (method[0] == :call) then
-  if (method[1] == nil) and ((method.length < 5) and ((method[3][0] == :arglist) and (method[3].length == 1))) then
+  if method[1] == nil && method.length < 5 && method[3] &&method[3][0] == :arglist && method[3].length == 1 then
     is_role = interpretation_context.roles.has_key?(method[3])
     method[3] = ":@#{method[3]}" if is_role
   else
@@ -25,7 +26,7 @@ end
  end
   
 def initialize (method,interpretation_context)
-raise("No method supplied") unless method
+raise("No method supplied") unless method and method.length
 @method = method
 @interpretation_context = interpretation_context
  end
@@ -78,5 +79,6 @@ is_role_method = (role and role.has_key?(method_name))
 return [role_name, is_role_method]
  end
 
-
+
+
 end

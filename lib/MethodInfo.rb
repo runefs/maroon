@@ -1,6 +1,8 @@
 class MethodInfo
   
 def initialize (on_self,block_source)
+raise "Must be S-Expressions" unless block_source.instance_of? Sexp
+raise "No body" unless block_source
 if on_self.instance_of?(Hash) then
   @block = on_self[:block]
   @on_self = on_self[:self]
@@ -30,9 +32,12 @@ def self_block_source_get_arguments
 sexp = block_source[2]
 return nil unless sexp
 return sexp[1] if (sexp[0] == :lasgn)
-sexp = sexp[1][(1..-1)]
+return [] if sexp[1] == nil
+sexp = sexp[(1..-1)]
 args = []
-sexp.each { |e| (args << ((e[0] == :splat) ? ("*#{e[1][1]}") : (e[1]))) }
+sexp.each { |e|
+  (args << ((e.instance_of? Symbol) ? e : (if e[0] == :splat then "*#{e[1][1]}" else e[1] end)))
+}
 if block then
   b = "&#{block}"
   args ? ((args << b)) : (args = [b])

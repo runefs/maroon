@@ -35,7 +35,7 @@
 #Author:: Rune Funch Søltoft (funchsoltoft@gmail.com)
 #License:: Same as for Ruby
 ##
-Context::generate_file = true
+Context::generate_files_in 'generated'
 Context::define :Context do
   role :roles do end
   role :interactions do end
@@ -52,6 +52,7 @@ Context::define :Context do
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
   define :block=>:block,:self=>self do|*args|
+
     alias method_missing role_or_interaction_method
     base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
     ctx.generate_file = args.last() if args.last().instance_of? FalseClass or args.last().instance_of? TrueClass
@@ -67,7 +68,7 @@ Context::define :Context do
     return @@with_contracts if args.length == 0
     value = args[0]
     raise 'make up your mind! disabling contracts during execution will result in undefined behavior' if @@with_contracts && !value
-    @@with_contracts = value[0]
+    @@with_contracts = value
   end
 
   generate_files_in :block=>:b do |*args|
@@ -124,9 +125,12 @@ Context::define :Context do
   get_method :block=>:b do |*args|
     return role_or_interaction_method(:get_methods,*args,&b) if block_given?
     name = args[0]
-    sources = (@defining_role ? @roles[@defining_role] : @interactions)[name]
-    sources = [] if sources == nil
-    (@defining_role ? @roles[@defining_role] : @interactions)[name] = (sources.instance_of? Array) ? sources : [sources]
+    sources = (@defining_role ? (@roles[@defining_role]) : (@interactions))[name]
+    if @defining_role && !sources
+      @roles[@defining_role][name] = []
+    else
+      (@interactions)[name] = []
+    end
   end
 
   role :contracts do end
@@ -138,7 +142,10 @@ Context::define :Context do
     sources << method
   end
 
-  finalize do|name, base_class, default|
+  finalize :block=>:b do |*args|
+    return role_or_interaction_method(:finalize, *args, &b) if block_given?
+    name,base_class,default = *args
+
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
     code = generate_context_code(default, name)
@@ -156,7 +163,7 @@ Context::define :Context do
           raise \'Contracts must be supplied\' unless value
           @@contracts = value
         end')
-      c.contracts=self.contracts
+      c.contracts=contracts
     end
     if generate_file
       complete = "class #{name}\r\n#{code}\r\nend"
@@ -180,18 +187,27 @@ Context::define :Context do
     return base_class, ctx, default_interaction, name
   end
 
-  generate_context_code do |default, name|
+  generate_context_code :block=>:b do |args|
+    return role_or_interaction_method(:generate_context_code,*args,&b) if block_given?
+    default,name = args
+
     getters = ''
     impl = ''
     interactions = ''
     @interactions.each do |method_name, methods|
       methods.each do |method|
         @defining_role = nil
-        interactions << "  #{method.build_as_context_method method_name,current_interpretation_context}"
+        code = " " + (method.build_as_context_method method_name,current_interpretation_context)
+        if @private
+          getters << code
+        else
+          interactions << code
+        end
       end
     end
+
     if default
-      interactions << %{
+      interactions << %|
          def self.call(*args)
              arity = #{name}.method(:new).arity
              newArgs = args[0..arity-1]
@@ -203,13 +219,17 @@ Context::define :Context do
                 obj.#{default}
              end
          end
-         }
+         |
       interactions <<"\ndef call(*args);#{default} *args; end\n"
     end
 
     @roles.each do |role, methods|
       getters << "def #{role};@#{role} end\n"
-      methods.each do |method_name, method_source|
+      methods.each do |method_name, method_sources|
+        raise "Duplicate definition of #{method_name}" unless method_sources.length < 2
+        raise "No source for #{method_name}" unless method_sources.length > 0
+
+        method_source = method_sources[0]
         @defining_role = role
         rewritten_method_name = "self_#{role}_#{method_name}"
         definition = method_source.build_as_context_method rewritten_method_name,current_interpretation_context
@@ -217,7 +237,8 @@ Context::define :Context do
       end
     end
 
-    "#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
+
+    "#{interactions}\n private\n#{getters}\n#{impl}\n"
   end
 
   role_or_interaction_method({:block => :b}) do |*arguments|
@@ -229,6 +250,6 @@ Context::define :Context do
 
     raise "method with out block #{method_name}" unless block_given?
 
-    add_method(method_name,MethodInfo.new(on_self, b))
+    add_method(method_name,MethodInfo.new(on_self, b.to_sexp))
   end
 end

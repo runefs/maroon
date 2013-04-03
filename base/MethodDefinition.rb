@@ -26,7 +26,7 @@ context :MethodDefinition, :transform do
     until expressions.empty?
 
       block.transform
-      if exp
+      if exp && (exp.instance_of? Sexp)
         is_indexer = exp[0] == :call && exp[1] == nil && (exp[2] == :[] || exp[2] == :[]=)
         if  (is_indexer || (exp[0] == :self)) && @interpretation_context.defining_role
           Self.new(exp,interpretation_context).execute

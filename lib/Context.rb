@@ -1,5 +1,6 @@
 class Context
-
+  @@with_contracts = false
+  @@generate_file_path = nil
   
 def self.define (*args,&block)
 (alias :method_missing :role_or_interaction_method)
@@ -36,7 +37,7 @@ value = args[0]
 if @@with_contracts and (not value) then
   raise("make up your mind! disabling contracts during execution will result in undefined behavior")
 end
-@@with_contracts = value[0]
+@@with_contracts = value
  end
   
 def generate_file (*args,&b)
@@ -52,7 +53,10 @@ if block_given? then
 end
 (@generate_file_path or @@generate_file_path)
  end
-  
+
+  def private
+    @private = true
+  end
 def role (*args,&b)
 role_name = args[0]
 if ((not (args.length == 1)) or (not role_name.instance_of?(Symbol))) then
@@ -66,11 +70,12 @@ yield if block_given?
   
 def initialize (*args,&b)
 if block_given? then
+  raise "????" unless args
   role_or_interaction_method(:initialize, *args, &b)
 else
   @roles = Hash.new
   @interactions = Hash.new
-  @role_alias = Array.new
+  @role_alias = Hash.new
   @contracts = Hash.new
 end end
   
@@ -78,8 +83,11 @@ def get_method (*args,&b)
 return role_or_interaction_method(:get_methods, *args, &b) if block_given?
 name = args[0]
 sources = (@defining_role ? (@roles[@defining_role]) : (@interactions))[name]
-sources = [] if (sources == nil)
-@defining_role ? (@roles[@defining_role]) : (@interactions)[name] = sources.instance_of?(Array) ? (sources) : ([sources])
+if @defining_role && !sources
+    @roles[@defining_role][name] = []
+  else
+    (@interactions)[name] = []
+  end
  end
   
 def add_method (*args,&b)
@@ -89,13 +97,16 @@ sources = get_method(name)
 (sources << method)
  end
   
-def finalize (name,base_class,default)
+def finalize (*args,&b)
+  return role_or_interaction_method(:finalize, *args, &b) if block_given?
+  name,base_class,default = *args
+
 c = base_class ? (Class.new(base_class)) : (Class.new)
 Kernel.const_set(name, c)
 code = generate_context_code(default, name)
 if @@with_contracts then
   c.class_eval("def self.assert_that(obj)\n          ContextAsserter.new(self.contracts,obj)\n        end\n        def self.refute_that(obj)\n          ContextAsserter.new(self.contracts,obj,false)\n        end\n        def self.contracts\n          @@contracts\n        end\n        def self.contracts=(value)\n          raise 'Contracts must be supplied' unless value\n          @@contracts = value\n        end")
-  c.contracts = self.contracts
+  c.contracts = @contracts
 end
 if generate_file then
   complete = "class #{name}
@@ -124,18 +135,29 @@ ctx.instance_eval(&block)
 return [base_class, ctx, default_interaction, name]
  end
 
-def current_interpretation_context
+def current_interpretation_context(*args,&b)
+  return role_or_interaction_method(:current_interpretation_context,*args,&b) if block_given?
+
   InterpretationContext.new(roles,contracts,role_alias,nil)
 end
 
-def generate_context_code (default,name)
+def generate_context_code (*args,&b)
+  return role_or_interaction_method(:generate_context_code,*args,&b) if block_given?
+  default,name = args
+  p "#{default},#{name}"
+
 getters = ""
 impl = ""
 interactions = ""
 @interactions.each do |method_name, methods|
   methods.each do |method|
     @defining_role = nil
-    (interactions << "  #{method.build_as_context_method(method_name,current_interpretation_context) }")
+    code = "  #{method.build_as_context_method(method_name,current_interpretation_context) }"
+    if @private
+      getters << code
+    else
+      interactions << code
+    end
   end
 end
 if default then
@@ -144,14 +166,18 @@ if default then
 end
 @roles.each do |role, methods|
   (getters << "def #{role};@#{role} end\n")
-  methods.each do |method_name, method_source|
+  methods.each do |method_name, method_sources|
+    raise "Duplicate definition of #{method_name}" unless method_sources.length < 2
+    raise "No source for #{method_name}" unless method_sources.length > 0
+
+    method_source = method_sources[0]
     @defining_role = role
     rewritten_method_name = "self_#{role}_#{method_name}"
-    definition = method_info2method_definition(method_source.build_as_context_method rewritten_method_name,current_interpretation_context )
+    definition = method_source.build_as_context_method rewritten_method_name,current_interpretation_context
     (impl << "  #{definition}") if definition
   end
 end
-"#{interactions}\n#{fields}\n  private\n#{getters}\n#{impl}\n"
+"#{interactions}\n private\n#{getters}\n#{impl}\n"
  end
   
 def role_or_interaction_method (*args,&b)
@@ -164,7 +190,7 @@ def role_or_interaction_method (*args,&b)
   end
   raise("method with out block #{method_name}") unless block_given?
 
-  add_method(method_name,MethodInfo.new(on_self, b))
+  add_method(method_name,MethodInfo.new(on_self, b.to_sexp))
  end
 
 

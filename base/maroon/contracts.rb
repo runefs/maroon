@@ -42,4 +42,4 @@ class ContextAsserter < ContextAsserterBase
     missing.length == 0
   end
 end
-Context::with_contracts = true
+Context::with_contracts(true)

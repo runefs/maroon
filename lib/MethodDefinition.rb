@@ -1,4 +1,5 @@
-class MethodDefinition
+class MethodDefinition
+
   
 def initialize (exp,interpretationcontext)
 require_relative("ImmutableQueue")
@@ -24,8 +25,8 @@ end
   
 def transform 
 until self_expressions_empty? do
-  (self_block_transform
-  if exp then
+  self_block_transform
+  if exp && (exp.instance_of? Sexp) then
     is_indexer = ((exp[0] == :call) and ((exp[1] == nil) and ((exp[2] == :[]) or (exp[2] == :[]=))))
     if (is_indexer or (exp[0] == :self)) and @interpretation_context.defining_role then
       Self.new(exp, interpretation_context).execute
@@ -34,7 +35,7 @@ until self_expressions_empty? do
       MethodCall.new(exp, interpretation_context).rewrite_call?
     end
   end
-  rebind)
+  rebind
 end end
 
          def self.call(*args)
@@ -103,5 +104,6 @@ end
 changed
  end
 
-
+
+
 end
