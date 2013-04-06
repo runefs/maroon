@@ -36,19 +36,33 @@ return [] if sexp[1] == nil
 sexp = sexp[(1..-1)]
 args = []
 sexp.each { |e|
-  (args << ((e.instance_of? Symbol) ? e : (if e[0] == :splat then "*#{e[1][1]}" else e[1] end)))
+  arg = (e.instance_of? Symbol) ? e : if e[0] == :splat then "*#{e[1][1]}" else e[1] end
+  args[args.length] = arg
 }
-if block then
+if block
   b = "&#{block}"
-  args ? ((args << b)) : (args = [b])
+  if args
+    args[args.length] = b
+  else
+    args = [b]
+  end
 end
 args
- end
+end
   
 def self_block_source_arguments 
 args = self_block_source_get_arguments
-args and args.length ? (args.join(",")) : (nil)
- end
+
+  if args.instance_of? Array
+    if args.length == 1
+      args[0]
+    else
+      args.join(',')
+    end
+  else
+    args
+  end
+end
   
 def self_block_source_body 
 block_source[3] end

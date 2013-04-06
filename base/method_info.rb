@@ -1,6 +1,6 @@
 context :MethodInfo do
-  initialize do |on_self,block_source|
-    raise "Must be S-Expressions" unless block_source.instance_of? Sexp
+  initialize do |on_self, block_source|
+    raise 'Must be S-Expressions' unless block_source.instance_of? Sexp
 
     if on_self.instance_of? Hash
       @block = on_self[:block]
@@ -12,8 +12,10 @@ context :MethodInfo do
     self.freeze
   end
 
-  role :on_self do end
-  role :block do end
+  role :on_self do
+  end
+  role :block do
+  end
 
   role :block_source do
     get_arguments do
@@ -21,15 +23,26 @@ context :MethodInfo do
       return nil unless sexp
       return sexp[1] if sexp[0] == :lasgn
       return [] if sexp[1] == nil
-      sexp = sexp[1..-1] # array of arguments
+      sexp = sexp[1..-1]
       args = []
-      sexp.each { |e|
+      sexp.each do |e|
+        args << if e.instance_of? Symbol
+                  e
+                else
+                  if e[0] == :splat
+                    '*' + e[1][1].to_s
+                  else
+                    e[1]
+                  end
+                end
+      end
 
-        args << ((e.instance_of? Symbol) ? e : (if e[0] == :splat then "*#{e[1][1]}" else e[1] end))
-      }
       if block
-        b = "&#{block}"
+        b = '&' + block.to_s
         if args
+          unless args.instance_of? Array
+            args = [args]
+          end
           args << b
         else
           args = [b]
@@ -47,10 +60,18 @@ context :MethodInfo do
   end
 
   build_as_context_method do |context_method_name, interpretation_context|
-    MethodDefinition.new(block_source.body,interpretation_context).transform
+    MethodDefinition.new(block_source.body, interpretation_context).transform
     body = Ruby2Ruby.new.process(block_source.body)
-    args = block_source.arguments ? "(#{block_source.arguments})" : nil
-    on = if on_self then "self." else "" end
-    "\ndef #{on}#{context_method_name}#{args}\n#{body} end\n"
+    args = block_source.arguments ? '(' + block_source.arguments + ')' : nil
+    on = if on_self then
+           'self.'
+         else
+           ''
+         end
+    '
+def ' + on.to_s + context_method_name.to_s + args +'
+' + body +'
+ end
+'
   end
 end

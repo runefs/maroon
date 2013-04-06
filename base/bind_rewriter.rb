@@ -15,11 +15,15 @@ context :Bind, :execute do
   #and replaces it with assignment to the proper role player local variables
   #in the end of the block the local variables have their original values reassigned
   execute do
-    raise 'aliased_role must be a Symbol' unless aliased_role.instance_of? Symbol
-    raise 'local must be a Symbol' unless local.instance_of? Symbol
+    must_b_sym = 'aliased_role must be a Symbol'.to_sym
+    local_must_b_sym = 'local must be a Symbol'.to_sym
+    raise must_b_sym unless aliased_role.instance_of? Symbol
+    raise local_must_b_sym unless local.instance_of? Symbol
     # assigning role player to role field
     #notice that this will be executed after the next block
-    aliased_field = "@#{aliased_role}".to_sym
+    aliased_field = ('@' + aliased_role.to_s).to_sym
+    temp_symbol = ('temp____' + aliased_role.to_s).to_sym
+
     assignment = Sexp.new
     assignment[0] = :iasgn
     assignment[1] = aliased_field
@@ -27,11 +31,11 @@ context :Bind, :execute do
     load_arg[0] = :lvar
     load_arg[1] = local
     assignment[2] = load_arg
-    block.insert 1,assignment
+    block.insert 1, assignment
 
     # assign role player to temp
     # notice this is prepended Ie. inserted in front of the role player to role field
-    temp_symbol = "temp____#{aliased_role}".to_sym
+
     assignment = Sexp.new
     assignment[0] = :lasgn
     assignment[1] = temp_symbol

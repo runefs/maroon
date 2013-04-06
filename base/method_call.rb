@@ -27,14 +27,14 @@ context :MethodCall, :rewrite_call? do
         role_name = interpretation_context.role_aliases[method[1][1]] if method[1][0] == :lvar #local var potentially bound
       end
       role = role_name ? interpretation_context.roles[role_name] : nil
-      [role , (role ? role_name : nil)]
+      [role, (role ? role_name : nil)]
     end
 
     role_method_call? do |method_name|
 
-      return nil,nil unless method
+      return nil, nil unless method
 
-      role,role_name = method.get_role_definition #is it a call to a role getter
+      role, role_name = method.get_role_definition #is it a call to a role getter
 
       #in_block = method.call_in_block?
       #role_name = interpretation_context.role_aliases[role_name] if in_block
@@ -47,15 +47,15 @@ context :MethodCall, :rewrite_call? do
   rewrite_call? do
     method_name = method[2]
     if method[0] == :call
-      if method[1] == nil && method.length < 5 && method[3][0] == :arglist && method[3].length == 1
+      if method[1] == nil && method.length < 5 && method[3] && method[3].length == 1 && method[3][0] == :arglist
         #accessing a role field?
         is_role = interpretation_context.roles.has_key? method[3]
-        method[3] = ":@#{method[3]}" if is_role
+        method[3] = ':@' + method[3].to_sym if is_role
       else
         role_name, is_role_method = method.role_method_call? method_name
         if is_role_method #role_name only returned if it's a role method call
           method[1] = nil #remove call to attribute
-          method[2] = "self_#{role_name}_#{method_name}".to_sym
+          method[2] = ('self_' + role_name.to_s + '_' + method_name.to_s).to_sym
         else # it's an instance method invocation
           if interpretation_context.roles.has_key? role_name
             contract_methods = (interpretation_context.contracts[role_name] ||= {})
@@ -64,12 +64,10 @@ context :MethodCall, :rewrite_call? do
           end
         end
       end
-    else
-      p "method[0] was #{method[0]}"
     end
   end
   initialize do |method, interpretation_context|
-    raise "No method supplied" unless method
+    raise 'No method supplied' unless method
 
     @method = method
     @interpretation_context = interpretation_context

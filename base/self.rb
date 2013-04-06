@@ -1,7 +1,7 @@
 context :Self, :execute do
   initialize do |abstract_syntax_tree, interpretationcontext|
-    raise "Interpretation context missing" unless interpretationcontext
-    raise "Must have a defining role" unless interpretationcontext.defining_role
+    raise 'Interpretation context missing' unless interpretationcontext
+    raise 'Must have a defining role' unless interpretationcontext.defining_role
 
     @abstract_syntax_tree = abstract_syntax_tree
     @interpretation_context = interpretationcontext
@@ -10,10 +10,10 @@ context :Self, :execute do
   role :abstract_syntax_tree do
     is_indexer_call_on_self do
       abstract_syntax_tree.length == 4 &&
-      abstract_syntax_tree[0] == :call &&
-      abstract_syntax_tree[1] == nil &&
-      abstract_syntax_tree[2] == :[] &&
-      abstract_syntax_tree[3][0] == :argslist
+          abstract_syntax_tree[0] == :call &&
+          abstract_syntax_tree[1] == nil &&
+          abstract_syntax_tree[2] == :[] &&
+          abstract_syntax_tree[3][0] == :argslist
     end
 
   end
@@ -37,18 +37,18 @@ context :Self, :execute do
         abstract_syntax_tree[3] = arglist
         arglist[0] = :arglist
       elsif abstract_syntax_tree[0] == :call and abstract_syntax_tree[1] == nil
-          method_name = abstract_syntax_tree[2]
-          #self is removed from S-expressions
-          if method_name == :[] or method_name == :[]=
-            get_role = Sexp.new
-            get_role[0] = :call
-            get_role[1] = nil
-            get_role[2] = interpretation_context.defining_role
-            arglist = Sexp.new
-            get_role[3] = arglist
-            arglist[0] = :arglist
-            abstract_syntax_tree[1] = get_role
-          end
+        method_name = abstract_syntax_tree[2]
+        #self is removed from S-expressions
+        if method_name == :[] or method_name == :[]=
+          get_role = Sexp.new
+          get_role[0] = :call
+          get_role[1] = nil
+          get_role[2] = interpretation_context.defining_role
+          arglist = Sexp.new
+          get_role[3] = arglist
+          arglist[0] = :arglist
+          abstract_syntax_tree[1] = get_role
+        end
       elsif abstract_syntax_tree.instance_of? Sexp
         if abstract_syntax_tree.is_indexer_call_on_self
           getter = new Sexp.new

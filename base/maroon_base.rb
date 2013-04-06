@@ -37,13 +37,20 @@
 ##
 Context::generate_files_in 'generated'
 Context::define :Context do
-  role :roles do end
-  role :interactions do end
-  role :defining_role do end
-  role :role_alias do end
-  role :alias_list do end
-  role :cached_roles_and_alias_list do end
-  role :generate_file do end
+  role :roles do
+  end
+  role :interactions do
+  end
+  role :defining_role do
+  end
+  role :role_alias do
+  end
+  role :alias_list do
+  end
+  role :cached_roles_and_alias_list do
+  end
+  role :generate_file do
+  end
 
   #define is the only exposed method and can be used to define a context (class)
   #if maroon/kernel is required calling context of Context::define are equivalent
@@ -51,7 +58,7 @@ Context::define :Context do
   #name:: the name of the context. Since this is used as the name of a class, class naming convetions should be used
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
-  define :block=>:block,:self=>self do|*args|
+  define :block => :block, :self => self do |*args|
 
     alias method_missing role_or_interaction_method
     base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
@@ -71,17 +78,17 @@ Context::define :Context do
     @@with_contracts = value
   end
 
-  generate_files_in :block=>:b do |*args|
-    return role_or_interaction_method(:generate_files_in,*args,&b) if block_given?
+  generate_files_in :block => :b do |*args|
+    return role_or_interaction_method(:generate_files_in, *args, &b) if block_given?
     @generate_file_path = args[0]
   end
 
-  generate_file :block=>:b do |*args|
-    return role_or_interaction_method(:generate_file,*args,&b) if block_given?
+  generate_file :block => :b do |*args|
+    return role_or_interaction_method(:generate_file, *args, &b) if block_given?
     @@generate_file_path && @generate_file_path
   end
-  generated_files_folder :block=>:b do |*args|
-    return role_or_interaction_method(:generated_files_folder,*args,&b) if block_given?
+  generated_files_folder :block => :b do |*args|
+    return role_or_interaction_method(:generated_files_folder, *args, &b) if block_given?
     @generate_file_path || @@generate_file_path
   end
   ##
@@ -95,9 +102,9 @@ Context::define :Context do
   #       end
   #The above code defines a role called 'who' with a role method called say
   ##
-  role :block=>:b do |*args|
+  role :block => :b do |*args|
     role_name = args[0]
-    return role_or_interaction_method(:role,*args,&b) if args.length != 1 or not (role_name.instance_of? Symbol)
+    return role_or_interaction_method(:role, *args, &b) if args.length != 1 or not (role_name.instance_of? Symbol)
 
     @defining_role = role_name
     @roles[role_name] = Hash.new
@@ -105,9 +112,9 @@ Context::define :Context do
     @defining_role = nil
   end
 
-  initialize :block=>:b do |*args|
+  initialize :block => :b do |*args|
     if block_given?
-      role_or_interaction_method(:initialize,*args,&b)
+      role_or_interaction_method(:initialize, *args, &b)
     else
       @roles = Hash.new
       @interactions = Hash.new
@@ -117,13 +124,13 @@ Context::define :Context do
 
   end
 
-  current_interpretation_context :block=>:b do |*args|
-    return role_or_interaction_method(:current_interpretation_context,*args,&b) if block_given?
-    InterpretationContext.new(roles,contracts,role_alias,nil)
+  current_interpretation_context :block => :b do |*args|
+    return role_or_interaction_method(:current_interpretation_context, *args, &b) if block_given?
+    InterpretationContext.new(roles, contracts, role_alias, nil)
   end
 
-  get_method :block=>:b do |*args|
-    return role_or_interaction_method(:get_methods,*args,&b) if block_given?
+  get_method :block => :b do |*args|
+    return role_or_interaction_method(:get_methods, *args, &b) if block_given?
     name = args[0]
     sources = (@defining_role ? (@roles[@defining_role]) : (@interactions))[name]
     if @defining_role && !sources
@@ -133,18 +140,19 @@ Context::define :Context do
     end
   end
 
-  role :contracts do end
+  role :contracts do
+  end
 
-  add_method :block=>:b do |*args|
-    return role_or_interaction_method(:add_methods,*args,&b) if block_given?
-    name,method = *args
+  add_method :block => :b do |*args|
+    return role_or_interaction_method(:add_methods, *args, &b) if block_given?
+    name, method = *args
     sources = get_method(name)
     sources << method
   end
 
-  finalize :block=>:b do |*args|
+  finalize :block => :b do |*args|
     return role_or_interaction_method(:finalize, *args, &b) if block_given?
-    name,base_class,default = *args
+    name, base_class, default = *args
 
     c = base_class ? (Class.new base_class) : Class.new
     Kernel.const_set name, c
@@ -166,8 +174,11 @@ Context::define :Context do
       c.contracts=contracts
     end
     if generate_file
-      complete = "class #{name}\r\n#{code}\r\nend"
-      File.open("./#{generated_files_path}/#{name}.rb", 'w') { |f| f.write(complete) }
+      name = name.to_s
+      complete = 'class ' + name + '
+      ' + code.to_s + '
+      end'
+      File.open('./' + generated_files_path.to_s + '/' + name + '.rb', 'w') { |f| f.write(complete) }
       complete
     else
       temp = c.class_eval(code)
@@ -187,9 +198,9 @@ Context::define :Context do
     return base_class, ctx, default_interaction, name
   end
 
-  generate_context_code :block=>:b do |args|
-    return role_or_interaction_method(:generate_context_code,*args,&b) if block_given?
-    default,name = args
+  generate_context_code :block => :b do |args|
+    return role_or_interaction_method(:generate_context_code, *args, &b) if block_given?
+    default, name = args
 
     getters = ''
     impl = ''
@@ -197,7 +208,7 @@ Context::define :Context do
     @interactions.each do |method_name, methods|
       methods.each do |method|
         @defining_role = nil
-        code = " " + (method.build_as_context_method method_name,current_interpretation_context)
+        code = ' ' + (method.build_as_context_method method_name, current_interpretation_context)
         if @private
           getters << code
         else
@@ -207,38 +218,46 @@ Context::define :Context do
     end
 
     if default
-      interactions << %|
+      interactions << '
          def self.call(*args)
-             arity = #{name}.method(:new).arity
+             arity = ' + name.to_s + '.method(:new).arity
              newArgs = args[0..arity-1]
-             obj = #{name}.new *newArgs
+             obj = ' + name.to_s + '.new *newArgs
              if arity < args.length
                  methodArgs = args[arity..-1]
-                 obj.#{default} *methodArgs
+                 obj.' + default.to_s + ' *methodArgs
              else
-                obj.#{default}
+                obj.' + default.to_s + '
              end
          end
-         |
-      interactions <<"\ndef call(*args);#{default} *args; end\n"
+         '
+      interactions << '
+      def call(*args);' + default.to_s + ' *args; end
+'
     end
 
     @roles.each do |role, methods|
-      getters << "def #{role};@#{role} end\n"
+      getters << 'attr_reader :' + role.to_s + '
+'
+
       methods.each do |method_name, method_sources|
-        raise "Duplicate definition of #{method_name}" unless method_sources.length < 2
-        raise "No source for #{method_name}" unless method_sources.length > 0
+        raise 'Duplicate definition of ' + method_name.to_s unless method_sources.length < 2
+        raise 'No source for ' + method_name.to_s unless method_sources.length > 0
 
         method_source = method_sources[0]
         @defining_role = role
-        rewritten_method_name = "self_#{role}_#{method_name}"
-        definition = method_source.build_as_context_method rewritten_method_name,current_interpretation_context
-        impl << "  #{definition}" if definition
+        rewritten_method_name = 'self_' + role.to_s + '_' + method_name.to_s
+        definition = method_source.build_as_context_method rewritten_method_name, current_interpretation_context
+        (impl << '   ' + definition.to_s) if definition
       end
     end
 
 
-    "#{interactions}\n private\n#{getters}\n#{impl}\n"
+    interactions + '
+ private
+' + getters + '
+' + impl + '
+'
   end
 
   role_or_interaction_method({:block => :b}) do |*arguments|
@@ -248,8 +267,8 @@ Context::define :Context do
       method_name = :role_or_interaction_method
     end
 
-    raise "method with out block #{method_name}" unless block_given?
+    raise 'Method with out block ' + method_name.to_s unless block_given?
 
-    add_method(method_name,MethodInfo.new(on_self, b.to_sexp))
+    add_method(method_name, MethodInfo.new(on_self, b.to_sexp))
   end
 end

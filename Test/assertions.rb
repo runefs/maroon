@@ -6,7 +6,9 @@ module SourceAssertions
 
     expected_sexp = if expected.instance_of? Sexp then expected else Ripper::sexp expected end
     actual_sexp =  if actual.instance_of? Sexp then actual else Ripper::sexp actual end
-    message = "Expected #{expected} but got #{actual}"
+    message = "
+Expected: #{expected}
+Actual:   #{actual}"
     assert_sexp_with_ident(expected_sexp, actual_sexp, message)
     assert_equal(1,1) #just getting the correct assertion count
   end
@@ -27,13 +29,25 @@ module SourceAssertions
         end
       end
     end
+    if (expected.length - actual.length) ** 2 == 1
+      if expected.length < actual.length
+        if actual[-1][0] == :arglist && actual[-1].length == 1
+          actual = actual[0..-2]
+        end
+      else
+        if expected[i][0] == :arglist  && expected[i].length == 1
+          expected = expected[0..-2]
+        end
+      end
+    end
 
     expected.each_index do |i|
-      if expected[i].instance_of? Array
-        if actual[i].instance_of? Array
+      if expected[i].instance_of? Array or expected[i].instance_of? Sexp
+        if actual[i].instance_of? Array or actual[i].instance_of? Sexp
           assert_sexp_with_ident(expected[i], actual[i], message)
         else
-          refute(message || "the arrays differ at index #{i}. Actual was an element but an array was expected")
+          msg = message || "the arrays differ at index #{i}. Actual was an element but an array was expected"
+          refute(true,msg)
         end
       else
         if expected[i] != actual[i]

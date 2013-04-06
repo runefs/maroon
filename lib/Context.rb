@@ -144,7 +144,6 @@ end
 def generate_context_code (*args,&b)
   return role_or_interaction_method(:generate_context_code,*args,&b) if block_given?
   default,name = args
-  p "#{default},#{name}"
 
 getters = ""
 impl = ""
@@ -182,15 +181,14 @@ end
   
 def role_or_interaction_method (*args,&b)
   method_name,on_self = *args
-  p "--#{method_name}"
 
   unless method_name.instance_of?(Symbol) then
     on_self = method_name
     method_name = :role_or_interaction_method
   end
   raise("method with out block #{method_name}") unless block_given?
-
-  add_method(method_name,MethodInfo.new(on_self, b.to_sexp))
+  info = MethodInfo.new(on_self, b.to_sexp)
+  add_method(method_name,info)
  end
 
 
