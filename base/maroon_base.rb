@@ -85,7 +85,7 @@ Context::define :Context do
 
   generate_file :block => :b do |*args|
     return role_or_interaction_method(:generate_file, *args, &b) if block_given?
-    @@generate_file_path && @generate_file_path
+    @@generate_file_path || @generate_file_path
   end
   generated_files_folder :block => :b do |*args|
     return role_or_interaction_method(:generated_files_folder, *args, &b) if block_given?
@@ -154,8 +154,6 @@ Context::define :Context do
     return role_or_interaction_method(:finalize, *args, &b) if block_given?
     name, base_class, default = *args
 
-    c = base_class ? (Class.new base_class) : Class.new
-    Kernel.const_set name, c
     code = generate_context_code(default, name)
     if @@with_contracts
       c.class_eval('def self.assert_that(obj)
@@ -175,12 +173,15 @@ Context::define :Context do
     end
     if generate_file
       name = name.to_s
-      complete = 'class ' + name + '
+      complete = 'class ' + name + (base_class ? '<< ' + base_class.name : '') + '
       ' + code.to_s + '
       end'
-      File.open('./' + generated_files_path.to_s + '/' + name + '.rb', 'w') { |f| f.write(complete) }
+      File.open('./' + generated_files_folder.to_s + '/' + name + '.rb', 'w') { |f| f.write(complete) }
       complete
     else
+
+      c = base_class ? (Class.new base_class) : Class.new
+      Kernel.const_set name, c
       temp = c.class_eval(code)
       (temp || c)
     end
@@ -209,7 +210,7 @@ Context::define :Context do
       methods.each do |method|
         @defining_role = nil
         code = ' ' + (method.build_as_context_method method_name, current_interpretation_context)
-        if @private
+        if method.is_private
           getters << code
         else
           interactions << code
@@ -238,7 +239,7 @@ Context::define :Context do
 
     @roles.each do |role, methods|
       getters << 'attr_reader :' + role.to_s + '
-'
+      '
 
       methods.each do |method_name, method_sources|
         raise 'Duplicate definition of ' + method_name.to_s unless method_sources.length < 2
@@ -256,8 +257,8 @@ Context::define :Context do
     interactions + '
  private
 ' + getters + '
-' + impl + '
-'
+    ' + impl + '
+    '
   end
 
   role_or_interaction_method({:block => :b}) do |*arguments|
@@ -269,6 +270,6 @@ Context::define :Context do
 
     raise 'Method with out block ' + method_name.to_s unless block_given?
 
-    add_method(method_name, MethodInfo.new(on_self, b.to_sexp))
+    add_method(method_name, MethodInfo.new(on_self, b.to_sexp, private))
   end
 end

@@ -1,5 +1,5 @@
 context :MethodInfo do
-  initialize do |on_self, block_source|
+  initialize do |on_self, block_source, is_private|
     raise 'Must be S-Expressions' unless block_source.instance_of? Sexp
 
     if on_self.instance_of? Hash
@@ -9,11 +9,14 @@ context :MethodInfo do
       @on_self = on_self
     end
     @block_source = block_source
+    @private = is_private
     self.freeze
+
   end
 
   role :on_self do
   end
+
   role :block do
   end
 
@@ -51,7 +54,7 @@ context :MethodInfo do
       args
     end
     arguments do
-      args = block_source.get_arguments
+      args = @block_source.get_arguments
       args && args.length ? args.join(',') : nil
     end
     body do
@@ -59,10 +62,14 @@ context :MethodInfo do
     end
   end
 
+  is_private do
+    @private
+  end
+
   build_as_context_method do |context_method_name, interpretation_context|
     MethodDefinition.new(block_source.body, interpretation_context).transform
     body = Ruby2Ruby.new.process(block_source.body)
-    args = block_source.arguments ? '(' + block_source.arguments + ')' : nil
+    args = block_source.arguments ? '(' + block_source.arguments + ')' : ""
     on = if on_self then
            'self.'
          else
@@ -70,7 +77,7 @@ context :MethodInfo do
          end
     '
 def ' + on.to_s + context_method_name.to_s + args +'
-' + body +'
+    ' + body +'
  end
 '
   end

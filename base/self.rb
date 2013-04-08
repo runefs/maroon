@@ -33,9 +33,6 @@ context :Self, :execute do
         abstract_syntax_tree[0] = :call
         abstract_syntax_tree[1] = nil
         abstract_syntax_tree[2] = interpretation_context.defining_role
-        arglist = Sexp.new
-        abstract_syntax_tree[3] = arglist
-        arglist[0] = :arglist
       elsif abstract_syntax_tree[0] == :call and abstract_syntax_tree[1] == nil
         method_name = abstract_syntax_tree[2]
         #self is removed from S-expressions
@@ -44,9 +41,6 @@ context :Self, :execute do
           get_role[0] = :call
           get_role[1] = nil
           get_role[2] = interpretation_context.defining_role
-          arglist = Sexp.new
-          get_role[3] = arglist
-          arglist[0] = :arglist
           abstract_syntax_tree[1] = get_role
         end
       elsif abstract_syntax_tree.instance_of? Sexp

@@ -1,3 +1,5 @@
+require_relative  '../Context'
+
 module Kernel
   def context(*args, &b)
     Context::define *args, &b

@@ -57,7 +57,7 @@ context :MethodDefinition, :transform do
   end
   role :expressions do
     empty? do
-      self == ImmutableQueue::empty
+      expressions == ImmutableQueue::empty
     end
   end
   role :potential_bind do
@@ -91,7 +91,6 @@ context :MethodDefinition, :transform do
       potential_bind.is_bind? && block.rewrite
     end
 
-=begin
     rewrite do
       changed = false
       argument_list = potential_bind[3]
@@ -112,7 +111,7 @@ context :MethodDefinition, :transform do
             if aliased_role.instance_of? Sexp
               aliased_role = aliased_role[1]
             end
-            raise "#{aliased_role} used in binding is an unknown role #{roles}" unless aliased_role.instance_of? Symbol and interpretation_context.roles.has_key? aliased_role
+            raise aliased_role.to_s + 'used in binding is an unknown role ' + roles.to_s unless aliased_role.instance_of? Symbol and interpretation_context.roles.has_key? aliased_role
             interpretation_context.addalias local, aliased_role
             #replace bind call with assignment of iteration variable to role field
             Bind.new(local, aliased_role, block).execute
@@ -122,7 +121,6 @@ context :MethodDefinition, :transform do
       end
       changed
     end
-=end
   end
 
 end

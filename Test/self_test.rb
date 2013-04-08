@@ -36,7 +36,7 @@ class Self_test < MiniTest::Unit::TestCase
   def test_as_index
     ast = (get_sexp {bar[self]})[3]
 
-    Self.new(ast[3][1],interpretation_context).execute
+    Self.new(ast[3],interpretation_context).execute
 
     expected = (get_sexp { bar[role] })[3]
     refute_nil(ast)

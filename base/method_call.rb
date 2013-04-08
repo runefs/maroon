@@ -1,13 +1,13 @@
 context :MethodCall, :rewrite_call? do
   role :interpretation_context do
     contracts do
-      self.contracts || {}
+      @interpretation_context.contracts || {}
     end
     roles do
-      self.roles || {}
+      @interpretation_context.roles || {}
     end
     role_aliases do
-      self.role_aliases || {}
+      @interpretation_context.role_aliases || {}
     end
   end
 
@@ -58,9 +58,11 @@ context :MethodCall, :rewrite_call? do
           method[2] = ('self_' + role_name.to_s + '_' + method_name.to_s).to_sym
         else # it's an instance method invocation
           if interpretation_context.roles.has_key? role_name
-            contract_methods = (interpretation_context.contracts[role_name] ||= {})
-            contract_methods[method_name] ||= 0
-            contract_methods[method_name] += 1
+            unless method.length == 2 && method[1] == nil
+              contract_methods = (interpretation_context.contracts[role_name] ||= {})
+              contract_methods[method_name] ||= 0
+              contract_methods[method_name] += 1
+            end
           end
         end
       end

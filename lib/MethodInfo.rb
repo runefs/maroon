@@ -1,6 +1,7 @@
 class MethodInfo
   
-def initialize (on_self,block_source)
+def initialize (on_self,block_source,is_private)
+  @private = is_private
 raise "Must be S-Expressions" unless block_source.instance_of? Sexp
 raise "No body" unless block_source
 if on_self.instance_of?(Hash) then
@@ -12,7 +13,11 @@ end
 @block_source = block_source
 self.freeze
  end
-  
+
+def is_private
+  @private
+end
+
 def build_as_context_method (context_method_name,interpretation_context)
 MethodDefinition.new(self_block_source_body, interpretation_context).transform
 block = self_block_source_body

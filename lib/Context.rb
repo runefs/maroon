@@ -2,7 +2,7 @@ class Context
   @@with_contracts = false
   @@generate_file_path = nil
   
-def self.define (*args,&block)
+def self.define(*args,&block)
 (alias :method_missing :role_or_interaction_method)
 base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
 if (args.last.instance_of?(FalseClass) or args.last.instance_of?(TrueClass)) then
@@ -44,7 +44,7 @@ def generate_file (*args,&b)
 if block_given? then
   return role_or_interaction_method(:generate_file, *args, &b)
 end
-(@@generate_file_path and @generate_file_path)
+(@@generate_file_path || @generate_file_path)
  end
   
 def generated_files_folder (*args,&b)
@@ -101,8 +101,6 @@ def finalize (*args,&b)
   return role_or_interaction_method(:finalize, *args, &b) if block_given?
   name,base_class,default = *args
 
-c = base_class ? (Class.new(base_class)) : (Class.new)
-Kernel.const_set(name, c)
 code = generate_context_code(default, name)
 if @@with_contracts then
   c.class_eval("def self.assert_that(obj)\n          ContextAsserter.new(self.contracts,obj)\n        end\n        def self.refute_that(obj)\n          ContextAsserter.new(self.contracts,obj,false)\n        end\n        def self.contracts\n          @@contracts\n        end\n        def self.contracts=(value)\n          raise 'Contracts must be supplied' unless value\n          @@contracts = value\n        end")
@@ -112,11 +110,13 @@ if generate_file then
   complete = "class #{name}
 \n#{code}
 \nend"
-  File.open("./#{generated_files_path}/#{name}.rb", "w") do |f|
+  File.open("./#{generated_files_folder}/#{name}.rb", "w") do |f|
     f.write(complete)
   end
   complete
 else
+  c = base_class ? (Class.new(base_class)) : (Class.new)
+  Kernel.const_set(name, c)
   temp = c.class_eval(code)
   (temp or c)
 end
@@ -152,7 +152,7 @@ interactions = ""
   methods.each do |method|
     @defining_role = nil
     code = "  #{method.build_as_context_method(method_name,current_interpretation_context) }"
-    if @private
+    if method.is_private
       getters << code
     else
       interactions << code
@@ -187,7 +187,7 @@ def role_or_interaction_method (*args,&b)
     method_name = :role_or_interaction_method
   end
   raise("method with out block #{method_name}") unless block_given?
-  info = MethodInfo.new(on_self, b.to_sexp)
+  info = MethodInfo.new(on_self, b.to_sexp,@private)
   add_method(method_name,info)
  end
 

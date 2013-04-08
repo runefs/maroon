@@ -1,5 +1,6 @@
 require_relative '../generated/MethodDefinition'
 require_relative 'test_helper'
+require 'ripper'
 
 class Expression_test < MiniTest::Unit::TestCase
   include SourceAssertions
@@ -10,18 +11,20 @@ class Expression_test < MiniTest::Unit::TestCase
     InterpretationContext.new(roles,contracts,aliases,:role)
   end
   def assert_transform(expected,block)
+    raise "No block" unless block
+
     ctx = get_context
-    MethodDefinition.new(block,ctx).transform
+    md = MethodDefinition.new(block,ctx)
+    md.transform
+
     assert_source_equal(expected,block)
     ctx
   end
   def test_method_call
-    block = (get_sexp do
-        baz.rolemethod
-    end)[3]
-    expected = (get_sexp do
-      self_baz_rolemethod
-    end)[3]
+    block = (get_sexp { baz.rolemethod })[3]
+
+    expected = (get_sexp { self_baz_rolemethod })[3]
+
     assert_transform(expected,block)
   end
   def test_index
@@ -89,10 +92,12 @@ class Expression_test < MiniTest::Unit::TestCase
   end
 
   def test_nested_lambda
-    block = lambda {
-      lambda {baz.rolemethod}}.call.to_sexp
-    expected = lambda {
-      lambda {self_baz_rolemethod}}.call.to_sexp
+
+    block = (get_sexp {lambda {
+      lambda {baz.rolemethod}}.call})
+
+    expected = (get_sexp {lambda {
+      lambda {self_baz_rolemethod}}.call})
 
     assert_transform(expected,block)
   end

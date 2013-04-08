@@ -12,7 +12,7 @@ task :generate do |t|
   require_relative './lib/maroon/kernel'
   require_relative './lib/build' #use the one in lib. That should be the stable one
   Context::generate_files_in(:generated) #generate files not just in memory classes
-  `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
+  `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f|p f; require_relative("#{f}")}
 end
 
 #execute as with command line to make memory spaces independent

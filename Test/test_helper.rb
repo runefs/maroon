@@ -5,5 +5,10 @@ require_relative '../generated/interpretation_context'
 #require 'debugger'
 
 def get_sexp &b
-  b.to_sexp
+  begin
+     b.to_sexp
+  rescue
+    puts "failed to get expression"
+  end
+
 end
