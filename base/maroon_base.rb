@@ -57,15 +57,18 @@ context :Context do
   #block:: the body of the context. Can include definitions of roles (through the role method) or definitions of interactions
   #by simply calling a method with the name of the interaction and passing a block as the body of the interaction
   define :block => :block, :self => self do |*args|
-    @@with_contracts = nil
+    @@with_contracts ||= nil
+    @@generate_file_path ||= nil
     alias method_missing role_or_interaction_method
     base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
     ctx.generate_files_in(args.last()) if args.last().instance_of? FalseClass or args.last().instance_of? TrueClass
     return ctx.send(:finalize, name, base_class, default_interaction)
   end
 
-  generate_files_in self do |folder|
-    @@generate_file_path = folder
+  generate_files_in :block => :b,:self => self do |*args|
+    return role_or_interaction_method(:generate_files_in, *args, &b) if block_given?
+
+    @@generate_file_path = args[0]
   end
 
   private
@@ -76,19 +79,6 @@ context :Context do
     @@with_contracts = value
   end
 
-  generate_files_in :block => :b do |*args|
-    return role_or_interaction_method(:generate_files_in, *args, &b) if block_given?
-    @generate_file_path = args[0]
-  end
-
-  generate_file_in :block => :b do |*args|
-    return role_or_interaction_method(:generate_file, *args, &b) if block_given?
-    @@generate_file_path || @generate_file_path
-  end
-  generated_files_folder :block => :b do |*args|
-    return role_or_interaction_method(:generated_files_folder, *args, &b) if block_given?
-    @generate_file_path || @@generate_file_path
-  end
   ##
   #Defines a role with the given name
   #role methods can be defined inside a block passed to this method
@@ -156,8 +146,19 @@ context :Context do
     name, base_class, default = *args
 
     code = generate_context_code(default, name)
-    if @@with_contracts
-      c.class_eval('def self.assert_that(obj)
+
+    if @@generate_file_path
+      name = name.to_s
+      complete = 'class ' + name + (base_class ? '<< ' + base_class.name : '') + '
+      ' + code.to_s + '
+      end'
+      File.open('./' + @@generate_file_path.to_s + '/' + name + '.rb', 'w') { |f| f.write(complete) }
+      complete
+    else
+
+      c = base_class ? (Class.new base_class) : Class.new
+      if @@with_contracts
+        c.class_eval('def self.assert_that(obj)
           ContextAsserter.new(self.contracts,obj)
         end
         def self.refute_that(obj)
@@ -170,18 +171,8 @@ context :Context do
           raise \'Contracts must be supplied\' unless value
           @@contracts = value
         end')
-      c.contracts=contracts
-    end
-    if generate_file
-      name = name.to_s
-      complete = 'class ' + name + (base_class ? '<< ' + base_class.name : '') + '
-      ' + code.to_s + '
-      end'
-      File.open('./' + generated_files_folder.to_s + '/' + name + '.rb', 'w') { |f| f.write(complete) }
-      complete
-    else
-
-      c = base_class ? (Class.new base_class) : Class.new
+        c.contracts=contracts
+      end
       Kernel.const_set name, c
       temp = c.class_eval(code)
       (temp || c)

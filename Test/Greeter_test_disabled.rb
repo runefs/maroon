@@ -1,10 +1,10 @@
 require_relative './test_helper.rb'
 
-require_relative '../lib/maroon.rb'
 require_relative '../lib/maroon/kernel.rb'
-require_relative '../lib/maroon/contracts.rb'
+require_relative '../lib/build'
+
 require_relative 'assertions.rb'
-require './Examples/meter.rb'
+#require './Examples/meter.rb'
 
 
 class BasicTests < MiniTest::Unit::TestCase

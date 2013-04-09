@@ -1,4 +1,4 @@
-require './lib/maroon'
+
 require './lib/maroon/kernel'
 
 context :Meter, :current_total do
