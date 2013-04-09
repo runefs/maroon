@@ -50,7 +50,7 @@ context :MethodDefinition, :transform do
 
   role :interpretation_context do
     addalias do |key, value|
-      self.role_aliases[key] = value
+      @interpretation_context.role_aliases[key] = value
     end
   end
   role :exp do
@@ -76,26 +76,25 @@ context :MethodDefinition, :transform do
     #-Rewrites binds when needed
     #-Rewrites role method calls to instance method calls on the context
     ##
-    transform do
+    transform {
       if block
         if block.transform_bind?
           @expressions.push_array(block[1..-1])
         end
       end
-    end
+    }
     ##
     #Calls rewrite_block if needed and will return true if the AST was changed otherwise false
     ##
-    transform_bind? do
+    transform_bind? {
       #check if the first call is a bind call
       potential_bind.is_bind? && block.rewrite
-    end
+    }
 
-    rewrite do
+    rewrite {
       changed = false
-      argument_list = potential_bind[3]
-      if argument_list && argument_list[0] == :arglist
-        arguments = argument_list[1]
+      arguments = potential_bind[3]
+
         if arguments && arguments[0] == :hash
           block.delete_at 1
           count = (arguments.length-1) / 2
@@ -118,9 +117,8 @@ context :MethodDefinition, :transform do
             changed = true
           end
         end
-      end
       changed
-    end
+    }
   end
 
 end

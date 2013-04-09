@@ -21,7 +21,7 @@ context :MethodInfo do
   end
 
   role :block_source do
-    get_arguments do
+    get_arguments {
       sexp = block_source[2]
       return nil unless sexp
       return sexp[1] if sexp[0] == :lasgn
@@ -52,14 +52,16 @@ context :MethodInfo do
         end
       end
       args
-    end
-    arguments do
-      args = @block_source.get_arguments
+      }
+
+    arguments {
+      args = block_source.get_arguments
       args && args.length ? args.join(',') : nil
-    end
-    body do
+    }
+
+    body {
       block_source[3]
-    end
+    }
   end
 
   is_private do

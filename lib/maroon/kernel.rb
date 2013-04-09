@@ -1,4 +1,4 @@
-require_relative  '../Context'
+require_relative '../Context'
 
 module Kernel
   def context(*args, &b)

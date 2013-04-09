@@ -1,23 +1,24 @@
+require_relative '../lib/maroon/kernel'
 context :MethodCall, :rewrite_call? do
   role :interpretation_context do
-    contracts do
+    contracts {
       @interpretation_context.contracts || {}
-    end
-    roles do
+    }
+    roles {
       @interpretation_context.roles || {}
-    end
-    role_aliases do
+    }
+    role_aliases {
       @interpretation_context.role_aliases || {}
-    end
+    }
   end
 
   role :method do
-    call_in_block? do
+    call_in_block? {
       @in_block unless @in_block == nil
       (@in_block = (method && method[0] == :lvar))
-    end
+    }
 
-    get_role_definition do
+    get_role_definition {
       is_call_expression = method && method[0] == :call
       self_is_instance_expression = (is_call_expression && !method[1])
       role_name = nil
@@ -28,9 +29,9 @@ context :MethodCall, :rewrite_call? do
       end
       role = role_name ? interpretation_context.roles[role_name] : nil
       [role, (role ? role_name : nil)]
-    end
+    }
 
-    role_method_call? do |method_name|
+    role_method_call? { |method_name|
 
       return nil, nil unless method
 
@@ -41,7 +42,7 @@ context :MethodCall, :rewrite_call? do
       is_role_method = role && role.has_key?(method_name)
 
       return role_name, is_role_method
-    end
+    }
   end
 
   rewrite_call? do
@@ -58,7 +59,7 @@ context :MethodCall, :rewrite_call? do
           method[2] = ('self_' + role_name.to_s + '_' + method_name.to_s).to_sym
         else # it's an instance method invocation
           if interpretation_context.roles.has_key? role_name
-            unless method.length == 2 && method[1] == nil
+            unless method.length == 3 && method[1] == nil && method[2] == role_name
               contract_methods = (interpretation_context.contracts[role_name] ||= {})
               contract_methods[method_name] ||= 0
               contract_methods[method_name] += 1

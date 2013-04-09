@@ -15,8 +15,10 @@ class MethodCall
         else
           if interpretation_context.roles.has_key?(role_name) then
             contract_methods = interpretation_context.contracts[role_name] ||= {}
-            contract_methods[method_name] ||= 0
-            contract_methods[method_name] += 1
+            unless method[1] == nil && method[2] == role_name
+              contract_methods[method_name] ||= 0
+              contract_methods[method_name] += 1
+            end
           end
         end
       end
@@ -77,7 +79,8 @@ class MethodCall
   def self_method_role_method_call? (method_name)
     return [nil, nil] unless method
     role, role_name = self_method_get_role_definition
-    is_role_method = (role and role.has_key?(method_name))
+    is_role_method = role ? (role.detect {|m| m.name == method_name})  : nil
+
     return [role_name, is_role_method]
   end
 
