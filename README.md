@@ -45,3 +45,10 @@ Run `rake test` or just `rake` to make the tests run.
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+
+Known bugs
+There are a few known bugs. The two major once are that #{...} syntax in strings can't beused. This is due to
+limitaion/bug in the current version of sourcify.
+If declaring several role methods for the same role sourcify might get confused and return the same sexp for
+multiple of them. The work around is to use do...end for the role ans {|| } for the role methods
+
