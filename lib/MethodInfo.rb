@@ -19,7 +19,7 @@ def is_private()
  end
  
 def build_as_context_method(context_method_name,interpretation_context)
-    MethodDefinition.new(self_block_source_body, interpretation_context).transform
+    AstRewritter.new(self_block_source_body, interpretation_context).rewrite!
 body = Ruby2Ruby.new.process(self_block_source_body)
 args = if self_block_source_arguments then
   (("(" + self_block_source_arguments) + ")")

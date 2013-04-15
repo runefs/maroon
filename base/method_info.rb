@@ -69,7 +69,7 @@ context :MethodInfo do
   end
 
   build_as_context_method do |context_method_name, interpretation_context|
-    MethodDefinition.new(block_source.body, interpretation_context).transform
+    AstRewritter.new(block_source.body,interpretation_context).rewrite!
     body = Ruby2Ruby.new.process(block_source.body)
     args = block_source.arguments ? '(' + block_source.arguments + ')' : ""
     on = if on_self then

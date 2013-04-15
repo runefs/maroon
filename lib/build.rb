@@ -1,14 +1,13 @@
 require 'sorcerer'
 require 'sourcify'
 
-require_relative 'self'
-require_relative 'bind'
-require_relative 'ImmutableQueue'
-require_relative 'ImmutableStack'
-require_relative 'interpretation_context'
-require_relative 'MethodDefinition'
-require_relative 'MethodInfo'
-require_relative 'MethodCall'
+require_relative './Tokens'
+require_relative './ImmutableStack'
+require_relative './ImmutableQueue'
+require_relative './interpretation_context'
+require_relative './Production'
+require_relative './AstRewritter'
+require_relative './MethodInfo'
 
-require_relative 'Context'
+require_relative './Context'
 

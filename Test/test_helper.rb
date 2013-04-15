@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'sourcify'
 require_relative 'assertions'
-require_relative '../generated/interpretation_context'
+require_relative '../generated/build'
 #require 'debugger'
 
 def get_sexp &b
