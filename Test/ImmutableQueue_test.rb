@@ -1,5 +1,6 @@
 require 'test/unit'
 require_relative '../generated/ImmutableQueue'
+require_relative '../Test/test_helper'
 
 
 

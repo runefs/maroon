@@ -23,36 +23,42 @@ context :MethodInfo do
   role :block_source do
     get_arguments {
       sexp = block_source[2]
-      return nil unless sexp
-      return sexp[1] if sexp[0] == :lasgn
-      return [] if sexp[1] == nil
-      sexp = sexp[1..-1]
-      args = []
-      sexp.each do |e|
-        args << if e.instance_of? Symbol
-                  e
-                else
-                  if e[0] == :splat
-                    '*' + e[1][1].to_s
-                  else
-                    e[1]
-                  end
-                end
-      end
-
-      if block
-        b = '&' + block.to_s
-        if args
-          unless args.instance_of? Array
-            args = [args]
-          end
-          args << b
+      case
+        when sexp == nil
+          nil
+        when sexp[0] == :lasgn
+          sexp[1]
+        when sexp[1] == nil
+          []
         else
-          args = [b]
-        end
+          sexp = sexp[1..-1]
+          args = []
+          sexp.each do |e|
+            args << if e.instance_of? Symbol
+                      e
+                    else
+                      if e[0] == :splat
+                        '*' + e[1][1].to_s
+                      else
+                        e[1]
+                      end
+                    end
+          end
+
+          if block
+            b = '&' + block.to_s
+            if args
+              unless args.instance_of? Array
+                args = [args]
+              end
+              args << b
+            else
+              args = [b]
+            end
+          end
+          args
       end
-      args
-      }
+    }
 
     arguments {
       args = block_source.get_arguments
@@ -69,7 +75,7 @@ context :MethodInfo do
   end
 
   build_as_context_method do |context_method_name, interpretation_context|
-    AstRewritter.new(block_source.body,interpretation_context).rewrite!
+    AstRewritter.new(block_source.body, interpretation_context).rewrite!
     body = Ruby2Ruby.new.process(block_source.body)
     args = block_source.arguments ? '(' + block_source.arguments + ')' : ""
     on = if on_self then

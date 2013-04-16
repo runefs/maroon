@@ -39,28 +39,34 @@ attr_reader :on_self
        
 def self_block_source_get_arguments()
     sexp = block_source[2]
-return nil unless sexp
-return sexp[1] if (sexp[0] == :lasgn)
-return [] if (sexp[1] == nil)
-sexp = sexp[(1..-1)]
-args = []
-sexp.each do |e|
-  (args << (if e.instance_of?(Symbol) then
-    e
-  else
-    (e[0] == :splat) ? (("*" + e[1][1].to_s)) : (e[1])
-  end))
-end
-if block then
-  b = ("&" + block.to_s)
-  if args then
-    args = [args] unless args.instance_of?(Array)
-    (args << b)
-  else
-    args = [b]
+case
+when (sexp == nil) then
+  nil
+when (sexp[0] == :lasgn) then
+  sexp[1]
+when (sexp[1] == nil) then
+  []
+else
+  (sexp = sexp[(1..-1)]
+  args = []
+  sexp.each do |e|
+    (args << (if e.instance_of?(Symbol) then
+      e
+    else
+      (e[0] == :splat) ? (("*" + e[1][1].to_s)) : (e[1])
+    end))
   end
+  if block then
+    b = ("&" + block.to_s)
+    if args then
+      args = [args] unless args.instance_of?(Array)
+      (args << b)
+    else
+      args = [b]
+    end
+  end
+  args)
 end
-args
 
  end
    

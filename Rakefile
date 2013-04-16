@@ -32,7 +32,7 @@ end
 
 task :build_generate do |t|
   require_relative './generated/build' #use the one previously generated
-  Context::generate_files_in('generated') #generate files
+  Context::generate_files_in('lib') #generate files
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 

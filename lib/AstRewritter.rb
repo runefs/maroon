@@ -5,13 +5,12 @@ def initialize(ast,interpretation_context)
  end
  
 def rewrite!()
-  @ast.each do |production|
-
+    ast.each do |production|
   case production.type
-    when Tokens.rolemethod_call then
-      data = production.data
-      production[2] = ((("self_" + data[0].to_s) + "_") + data[1].to_s).to_sym
-      production[1] = nil
+  when Tokens.rolemethod_call then
+    data = production.data
+    production[2] = ((("self_" + data[1].to_s) + "_") + data[0].to_s).to_sym
+    production[1] = nil
   when Tokens.block_with_bind then
     block = production.last
     must_b_sym = "aliased_role must be a Symbol".to_sym
@@ -51,7 +50,8 @@ end
  end
 
  private
-
+attr_reader :ast
+      
     
     
       end

@@ -11,7 +11,7 @@ context :AstRewritter do
       case production.type
         when Tokens::rolemethod_call
           data = production.data
-          production[2] = ('self_' + data[0].to_s + '_' + data[1].to_s).to_sym
+          production[2] = ('self_' + data[1].to_s + '_' + data[0].to_s).to_sym
           production[1] = nil
         when Tokens::block_with_bind
           block = production.last
