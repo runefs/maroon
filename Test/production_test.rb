@@ -17,21 +17,6 @@ class ProductionTest < Test::Unit::TestCase
     assert_equal(Tokens::rolemethod_call, production.type)
   end
 
-  def test_def
-    method_call =  get_sexp {
-      def self.my_name
-        foo.bar
-      end
-      def foobar(x,y)
-        56+x
-      end
-    }
-    contracts ={}
-    roles = {:foo=>{:bar=>[]} }
-    production = Production.new(method_call, InterpretationContext.new(roles,contracts,nil,nil))
-    assert_equal(Tokens::rolemethod_call, production.type)
-  end
-
   def test_call
     method_call = get_method_call {foo.baz}
 

@@ -3,7 +3,7 @@ require_relative '../generated/MethodInfo'
 require 'ripper'
 require_relative 'test_helper'
 
-class MethodInfoTest < Test::Unit::TestCase
+class MethodInfoTest #< Test::Unit::TestCase
   include SourceAssertions
   def test_simple
     block = get_sexp do |a,b|

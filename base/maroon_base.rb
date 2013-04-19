@@ -96,19 +96,8 @@ context :Context do
 
     @defining_role = role_name
     @roles[role_name] = Hash.new
-    yield if block_given?
-    @defining_role = nil
-  end
 
-  initialize :block => :b do |*args|
-    if block_given?
-      role_or_interaction_method(:initialize, *args, &b)
-    else
-      @roles = Hash.new
-      @interactions = Hash.new
-      @role_alias = Hash.new
-      @contracts = Hash.new
-    end
+
   end
 
   role_or_interaction_method(:private)  do

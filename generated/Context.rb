@@ -4,6 +4,23 @@ def self.define(*args,&block)
     @@with_contracts ||= nil
 @@generate_file_path ||= nil
 (alias :method_missing :role_or_interaction_method)
+    sexp = block.to_sexp
+    defs = []
+    i = 0
+
+    while i < sexp.length
+      exp = sexp[i]
+      if exp[0] == :defn || exp[0] == :defs
+        defs << exp
+        sexp.delete_at i
+      else
+        i += 1
+      end
+    end
+    if defs.length > 0
+      block = eval(Ruby2Ruby.new.process(sexp),block.binding)
+    end
+
 base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
 if (args.last.instance_of?(FalseClass) or args.last.instance_of?(TrueClass)) then
   ctx.generate_files_in(args.last)
@@ -31,7 +48,22 @@ end
 @@with_contracts = value
 
  end
- 
+
+def createInfo(definition)
+  if @defining_role == nil
+     name = (definition[0] == :defs ? "self." : "") + definition[1].to_s
+  else
+    name = "self_" + @defining_role.to_s + "_" + definition[1].to_s
+  end
+  arguments = definition[2].length > 1 ? definition[2][1..-1] : []
+  if definition.length > 3
+    body = definition[3..-1]
+    body.insert(0, :block)
+  else
+    body = exp[3]
+  end
+  MethodInfo.new(name,arguments, body, @private)
+end
 def role(*args,&b)
     role_name = args[0]
 if (args.length.!=(1) or (not role_name.instance_of?(Symbol))) then
@@ -39,21 +71,13 @@ if (args.length.!=(1) or (not role_name.instance_of?(Symbol))) then
 end
 @defining_role = role_name
 @roles[role_name] = Hash.new
+    sexp = b.to_sexp.select do |exp|
+      exp[0] == :defn || exp[0] == :defs
+    end
+    sexp.each do |exp|
+      add_method(exp[1], createInfo(exp))
+    end
 
-yield if block_given?
-@defining_role = nil
-
- end
- 
-def initialize(*args,&b)
-    if block_given? then
-  role_or_interaction_method(:initialize, *args, &b)
-else
-  @roles = Hash.new
-  @interactions = Hash.new
-  @role_alias = Hash.new
-  @contracts = Hash.new
-end
  end
  
 def private()
@@ -156,8 +180,8 @@ end
     end
     method_source = method_sources[0]
     @defining_role = role
-    rewritten_method_name = ((("self_" + role.to_s) + "_") + method_name.to_s)
-    definition = method_source.build_as_context_method(rewritten_method_name, current_interpretation_context)
+
+    definition = method_source.build_as_context_method(current_interpretation_context)
     (impl << ("   " + definition.to_s)) if definition
   end
 end
@@ -172,7 +196,7 @@ unless method_name.instance_of?(Symbol) then
   method_name = :role_or_interaction_method
 end
 raise(("Method with out block " + method_name.to_s)) unless block_given?
-add_method(method_name, MethodInfo.new(on_self, b.to_sexp, @private))
+#add_method(method_name, MethodInfo.new(on_self, b.to_sexp, @private))
 
  end
 attr_reader :roles
