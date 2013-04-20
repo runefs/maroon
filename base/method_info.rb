@@ -1,92 +1,24 @@
 context :MethodInfo do
-  initialize do |on_self, block_source, is_private|
-    raise 'Must be S-Expressions' unless block_source.instance_of? Sexp
+  def initialize(name, args, body, is_private)
+    raise("Must be S-Expressions") unless body.instance_of?(Sexp)
+    raise("Must be an array") unless args == nil || args.instance_of?(Array) || args.instance_of?(Sexp)
 
-    if on_self.instance_of? Hash
-      @block = on_self[:block]
-      @on_self = on_self[:self]
-    else
-      @on_self = on_self
-    end
-    @block_source = block_source
+    @body = body
     @private = is_private
+    @args = args
+    @name = name
     self.freeze
 
   end
 
-  role :on_self do
-  end
-
-  role :block do
-  end
-
-  role :block_source do
-    get_arguments {
-      sexp = block_source[2]
-      case
-        when sexp == nil
-          nil
-        when sexp[0] == :lasgn
-          sexp[1]
-        when sexp[1] == nil
-          []
-        else
-          sexp = sexp[1..-1]
-          args = []
-          sexp.each do |e|
-            args << if e.instance_of? Symbol
-                      e
-                    else
-                      if e[0] == :splat
-                        '*' + e[1][1].to_s
-                      else
-                        e[1]
-                      end
-                    end
-          end
-
-          if block
-            b = '&' + block.to_s
-            if args
-              unless args.instance_of? Array
-                args = [args]
-              end
-              args << b
-            else
-              args = [b]
-            end
-          end
-          args
-      end
-    }
-
-    arguments {
-      args = block_source.get_arguments
-      args && args.length ? args.join(',') : nil
-    }
-
-    body {
-      block_source[3]
-    }
-  end
-
-  is_private do
+  def is_private
     @private
   end
 
-  build_as_context_method do |context_method_name, interpretation_context|
-    AstRewritter.new(block_source.body, interpretation_context).rewrite!
-    body = Ruby2Ruby.new.process(block_source.body)
-    args = block_source.arguments ? '(' + block_source.arguments + ')' : ""
-    on = if on_self then
-           'self.'
-         else
-           ''
-         end
-    '
-def ' + on.to_s + context_method_name.to_s + args +'
-    ' + body +'
- end
-'
+  build_as_context_method do |interpretation_context|
+    AstRewritter.new(@body, interpretation_context).rewrite!
+    body = Ruby2Ruby.new.process(@body)
+    arguments = @args && @args.length ? ('('+ @args.join(",") + ')') : ''
+    ((((("\ndef " + @name.to_s) + arguments) + "\n    ") + body) + "\n end\n")
   end
 end

@@ -4,14 +4,22 @@ require 'ruby2ruby'
 module SourceAssertions
   def assert_source_equal(expected, actual)
 
-    expected_sexp = if expected.instance_of? String then Ripper::sexp expected else expected end
-    actual_sexp =  if actual.instance_of? String then Ripper::sexp actual else actual end
+    expected_sexp = if expected.instance_of? String then
+                      Ripper::sexp expected
+                    else
+                      expected
+                    end
+    actual_sexp = if actual.instance_of? String then
+                    Ripper::sexp actual
+                  else
+                    actual
+                  end
 
     message = "
     Expected: #{expected}
     but got:  #{actual}"
     assert_sexp_with_ident(expected_sexp, actual_sexp, message)
-    assert_equal(1,1) #just getting the correct assertion count
+    assert_equal(1, 1) #just getting the correct assertion count
   end
 
   def is_terminal(sexp)
@@ -40,7 +48,7 @@ module SourceAssertions
         end
       else
         if expected[i] != actual[i]
-          assert_equal(expected[i],actual[i], message || "the arrays differ at index #{i}")
+          assert_equal(expected[i], actual[i], message || "the arrays differ at index #{i}")
         end
       end
     end

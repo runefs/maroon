@@ -6,7 +6,7 @@ require_relative '../generated/build'
 
 def get_sexp &b
   begin
-     b.to_sexp
+    b.to_sexp
   rescue
     puts "failed to get expression"
   end
