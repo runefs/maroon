@@ -288,6 +288,9 @@ end')
 
   end
 
+  def private
+    @private = true
+  end
 
   def initialize
     @roles = {}
