@@ -8,6 +8,7 @@ Rake::TestTask.new do |t|
 end
 
 task :generate do |t|
+
   require_relative './lib/Context'
   require_relative './lib/maroon/kernel'
   require_relative './lib/build' #use the one in lib. That should be the stable one

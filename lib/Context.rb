@@ -10,7 +10,7 @@ class Context
     if (args.last.instance_of?(FalseClass) or args.last.instance_of?(TrueClass)) then
       ctx.generate_files_in(args.last)
     end
-    return ctx.send(:finalize, name, base_class, default_interaction)
+    return ctx.send(:finalize, name, base_class, default_interaction,@@generate_file_path, @@with_contracts)
 
   end
 
@@ -24,65 +24,44 @@ class Context
 
   private
 
-  def find_and_handle_interactions(block)
-    sexp = block.to_sexp
-    temp_block = sexp[3]
-    sexp_len = temp_block.length
-     i = 0
-
-    while i < temp_block.length
-      exp = temp_block[i]
-      unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
-        if exp[0] == :defn || exp[0] == :defs
-          add_method(exp)
-          temp_block.delete_at i
-          i -= 1
-        elsif exp[0] == :call && exp[1] == nil && exp[2] == :private
-          @private = true
-        end
-      end
-      i += 1
-    end
-    if sexp_len != temp_block.length #definitions was removed
-      eval(Ruby2Ruby.new.process(sexp), block.binding)
-    else
-      block
-    end
+  def private
+    @private = true
   end
 
   def self.with_contracts(*args)
     return @@with_contracts if (args.length == 0)
     value = args[0]
     if @@with_contracts and (not value) then
-      raise("make up your mind! disabling contracts during execution will result in undefined behavior")
+      raise('make up your mind! disabling contracts during execution will result in undefined behavior')
     end
     @@with_contracts = value
 
   end
 
   def createInfo(definition)
-
-    if @defining_role == nil
-      if definition[1].instance_of? Symbol
-        name = definition[1]
-      else
-        name = (definition[1].select{|e| e.instance_of? Symbol}.map{|e| e.to_s}.join('.') + '.' + definition[2].to_s).to_sym
-      end
-    else
-      name = "self_" + @defining_role.to_s + "_" + definition[1].to_s
-    end
-    arguments = definition.detect {|d| d[0] == :args}
-    index = definition.index(arguments) + 1
-    arguments = arguments && arguments.length > 1 ? arguments[1..-1] : []
-    if definition.length > index
-      body = definition[index..-1]
-      body.insert(0, :block)
-    else
-      body = exp[index]
-    end
-    MethodInfo.new(name, arguments, body, @private)
+    MethodInfo.new(definition, @defining_role, @private)
   end
 
+  def is_definition?(exp)
+    exp && (exp[0] == :defn || exp[0] == :defs)
+  end
+
+  def get_definitions(b)
+    sexp = b.to_sexp
+    unless is_definition? sexp[3]
+      sexp = sexp[3]
+      if sexp
+        sexp = sexp.select do |exp|
+          is_definition? exp
+        end
+      end
+      sexp ||= []
+    end
+
+    sexp.select do |exp|
+      is_definition? exp
+    end
+  end
   def role(*args, &b)
     role_name = args[0]
     if (args.length.!=(1) or (not role_name.instance_of?(Symbol))) then
@@ -91,24 +70,20 @@ class Context
     @defining_role = role_name
     @roles = {} unless @roles
     @roles[role_name] = Hash.new
-    sexp = b.to_sexp.select do |exp|
-      exp[0] == :defn || exp[0] == :defs
-    end
-    sexp.each do |exp|
+
+    definitions = get_definitions(b)
+
+    definitions.each do |exp|
       add_method(exp)
     end
 
-  end
-
-  def private()
-    @private = true
   end
 
   def current_interpretation_context(*args, &b)
     if block_given? then
       return role_or_interaction_method(:current_interpretation_context, *args, &b)
     end
-    InterpretationContext.new(roles, contracts, role_alias, nil)
+    InterpretationContext.new(@roles, @contracts, @role_alias, nil)
 
   end
 
@@ -127,33 +102,49 @@ class Context
   def add_method(*args, &b)
     return role_or_interaction_method(:add_method, *args, &b) if block_given?
     exp = args[0]
-    sources = get_methods(exp[1])
-    (sources << createInfo(exp))
-
+    info = createInfo exp
+    sources = get_methods(info.name)
+    (sources << info)
   end
 
   def finalize(*args, &b)
     return role_or_interaction_method(:finalize, *args, &b) if block_given?
-    name, base_class, default = *args
+    name, base_class, default, file_path,with_contracts = *args
     code = generate_context_code(default, name)
-    if @@generate_file_path then
+    if file_path then
       name = name.to_s
-      complete = ((((("class " + name) + (base_class ? (("<< " + base_class.name)) : (""))) + "\n      ") + code.to_s) + "\n      end")
-      File.open((((("./" + @@generate_file_path.to_s) + "/") + name) + ".rb"), "w") do |f|
+      complete = ((((('class ' + name) + (base_class ? (('<< ' + base_class.name)) : (''))) + '
+      ') + code.to_s) + '
+           end')
+      file_name = (((('./' + file_path.to_s) + '/') + name) + '.rb')
+      p "writing to: " + file_name
+      File.open(file_name, 'w') do |f|
         f.write(complete)
       end
       complete
     else
       c = base_class ? (Class.new(base_class)) : (Class.new)
-      if @@with_contracts then
-        c.class_eval("def self.assert_that(obj)\n          ContextAsserter.new(self.contracts,obj)\n        end\n        def self.refute_that(obj)\n          ContextAsserter.new(self.contracts,obj,false)\n        end\n        def self.contracts\n          @@contracts\n        end\n        def self.contracts=(value)\n          raise 'Contracts must be supplied' unless value\n          @@contracts = value\n        end")
+      if with_contracts then
+        c.class_eval(
+            'def self.assert_that(obj)
+  ContextAsserter.new(self.contracts,obj)
+end
+def self.refute_that(obj)
+  ContextAsserter.new(self.contracts,obj,false)
+end
+def self.contracts
+  @@contracts
+end
+def self.contracts=(value)
+  @@contracts = value
+end')
         c.contracts = contracts
       end
       Kernel.const_set(name, c)
       begin
         temp = c.class_eval(code)
       rescue SyntaxError
-        p code
+        p 'error: ' + code
       end
 
       (temp or c)
@@ -170,8 +161,27 @@ class Context
       base_class, default_interaction = default_interaction, base_class
     end
     ctx = Context.new
-    block = ctx.send(:find_and_handle_interactions,block)
-    ctx.instance_eval(&block)
+    ctx.instance_eval {
+      sexp = block.to_sexp
+      temp_block = sexp[3]
+      i = 0
+
+      while i < temp_block.length
+        exp = temp_block[i]
+        unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
+          if exp[0] == :defn || exp[0] == :defs
+            add_method(exp)
+            temp_block.delete_at i
+            i -= 1
+          elsif exp[0] == :call && exp[1] == nil && exp[2] == :private
+            @private = true
+          end
+        end
+        i += 1
+      end
+      ctx.instance_eval &block
+    }
+
     return [base_class, ctx, default_interaction, name]
 
   end
@@ -181,37 +191,59 @@ class Context
       return role_or_interaction_method(:generate_context_code, *args, &b)
     end
     default, name = args
-    getters = ""
-    impl = ""
-    interactions = ""
+    getters = ''
+    impl = ''
+    interactions = ''
     @interactions.each do |method_name, methods|
       methods.each do |method|
         @defining_role = nil
-        code = (" " + method.build_as_context_method(current_interpretation_context))
+        code = (' ' + method.build_as_context_method(current_interpretation_context))
         method.is_private ? ((getters << code)) : ((interactions << code))
       end
     end
     if default then
-      (interactions << (((((((("\n         def self.call(*args)\n             arity = " + name.to_s) + ".method(:new).arity\n             newArgs = args[0..arity-1]\n             obj = ") + name.to_s) + ".new *newArgs\n             if arity < args.length\n                 methodArgs = args[arity..-1]\n                 obj.") + default.to_s) + " *methodArgs\n             else\n                obj.") + default.to_s) + "\n             end\n         end\n         "))
-      (interactions << (("\n      def call(*args);" + default.to_s) + " *args; end\n"))
+      (interactions << (((((((('
+               def self.call(*args)
+             arity = ' + name.to_s) + '.method(:new).arity
+             newArgs = args[0..arity-1]
+             obj = ') + name.to_s) + '.new *newArgs
+             if arity < args.length
+                 methodArgs = args[arity..-1]
+                 obj.') + default.to_s) + ' *methodArgs
+             else
+                obj.') + default.to_s) + '
+                             end
+         end
+         '))
+      (interactions << (('
+            def call(*args);' + default.to_s) + ' *args; end
+'))
     end
     @roles.each do |role, methods|
-      (getters << (("attr_reader :" + role.to_s) + "\n      "))
+      (getters << (('attr_reader :' + role.to_s) + '
+      '))
       methods.each do |method_name, method_sources|
         unless (method_sources.length < 2) then
-          raise(("Duplicate definition of " + method_name.to_s))
+          raise(('Duplicate definition of ' + method_name.to_s))
         end
         unless (method_sources.length > 0) then
-          raise(("No source for " + method_name.to_s))
+          raise(('No source for ' + method_name.to_s))
         end
         method_source = method_sources[0]
         @defining_role = role
 
         definition = method_source.build_as_context_method(current_interpretation_context)
-        (impl << ("   " + definition.to_s)) if definition
+        (impl << ('   ' + definition.to_s)) if definition
       end
     end
-    (((((interactions + "\n private\n") + getters) + "\n    ") + impl) + "\n    ")
+    private_string = (getters + impl).strip! != '' ? '
+     private
+' : ''
+    impl = impl.strip! != '' ? '
+    ' + impl + '
+    ' : '
+    '
+    interactions + private_string + getters + impl
 
   end
 
@@ -221,22 +253,15 @@ class Context
       on_self = method_name
       method_name = :role_or_interaction_method
     end
-    raise(("Method with out block " + method_name.to_s)) unless block_given?
-#add_method(method_name, MethodInfo.new(on_self, b.to_sexp, @private))
+    raise(('Method with out block ' + method_name.to_s)) unless block_given?
 
   end
 
-  attr_reader :roles
-  attr_reader :interactions
-  attr_reader :defining_role
-  attr_reader :role_alias
-  attr_reader :alias_list
-  attr_reader :cached_roles_and_alias_list
-  attr_reader :contracts
 
   def initialize
     @roles = {}
     @interactions = {}
+    @role_alias = {}
   end
-end
 
+end

@@ -3,12 +3,13 @@ context :ImmutableQueue do
   end
   role :back do
   end
-  push do |element|
+
+  def push(element)
     b = back || ImmutableStack::empty
     ImmutableQueue.new(front, b.push(element))
   end
 
-  pop do
+  def pop
     f, b = front, back
     if f == ImmutableStack::empty
       #reverse the back stack to be able to pop from the front in correct order
@@ -25,11 +26,11 @@ context :ImmutableQueue do
     end
   end
 
-  empty true do
+  def self.empty
     @@empty ||= ImmutableQueue.new(ImmutableStack::empty, ImmutableStack::empty)
   end
 
-  push_array do |arr|
+  def push_array(arr)
     q = self
     if arr
       arr.each do |i|
@@ -41,7 +42,7 @@ context :ImmutableQueue do
 
   private
 
-  initialize do |front, back|
+  def initialize(front, back)
     @front = front || ImmutableStack::empty
     @back = back || ImmutableStack::empty
     self.freeze

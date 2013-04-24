@@ -2,14 +2,17 @@ class ImmutableStack
 
   def pop()
     [@head, @tail]
+
   end
 
   def push(element)
     ImmutableStack.new(element, self)
+
   end
 
   def self.empty()
     @@empty ||= self.new(nil, nil)
+
   end
 
   def each()

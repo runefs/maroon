@@ -2,6 +2,7 @@ class AstRewritter
 
   def initialize(ast, interpretation_context)
     @ast = Production.new(ast, interpretation_context)
+
   end
 
   def rewrite!()
@@ -47,6 +48,7 @@ class AstRewritter
           # do nothing
       end
     end
+
   end
 
   private

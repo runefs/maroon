@@ -1,11 +1,12 @@
 context :AstRewritter do
- role :ast do end
-
-  initialize do |ast, interpretation_context|
-    @ast = Production.new ast,interpretation_context
+  role :ast do
   end
 
-  rewrite! do
+  def initialize (ast, interpretation_context)
+    @ast = Production.new ast, interpretation_context
+  end
+
+  def rewrite!
     ast.each { |production|
 
       case production.type
@@ -35,7 +36,6 @@ context :AstRewritter do
 
           # assign role player to temp
           # notice this is prepended Ie. inserted in front of the role player to role field
-
           assignment = Sexp.new
           assignment[0] = :lasgn
           assignment[1] = temp_symbol

@@ -25,6 +25,7 @@ class ImmutableQueue
 
   def self.empty()
     @@empty ||= ImmutableQueue.new(ImmutableStack.empty, ImmutableStack.empty)
+
   end
 
   def push_array(arr)

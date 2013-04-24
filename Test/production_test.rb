@@ -1,7 +1,7 @@
 require 'test/unit'
 require_relative '../generated/Tokens'
 require_relative '../generated/Production'
-
+require_relative 'test_helper'
 class ProductionTest < Test::Unit::TestCase
   def get_method_call &b
     exp = get_sexp &b
@@ -11,27 +11,32 @@ class ProductionTest < Test::Unit::TestCase
   def test_rolemethod
     method_call = get_method_call { foo.bar }
 
+    production = get_production(method_call)
+    type = production.type
+    assert_equal(Tokens::rolemethod_call, type)
+  end
+
+  def get_production(method_call)
     contracts ={}
     roles = {:foo => {:bar => []}}
-    production = Production.new(method_call, InterpretationContext.new(roles, contracts, nil, nil))
-    assert_equal(Tokens::rolemethod_call, production.type)
+    Production.new(method_call, InterpretationContext.new(roles, contracts, nil, nil))
   end
 
   def test_call
     method_call = get_method_call { foo.baz }
 
-    contracts ={}
-    roles = {:foo => {:bar => []}}
-    production = Production.new(method_call, InterpretationContext.new(roles, contracts, nil, nil))
-    assert_equal(Tokens::call, production.type)
+    production = get_production(method_call)
+    type = production.type
+
+    assert_equal(Tokens::call, type)
   end
 
   def test_indexer
     method_call = get_method_call { foo[0] }
 
-    contracts ={}
-    roles = {:foo => {:bar => []}}
-    production = Production.new(method_call, InterpretationContext.new(roles, contracts, nil, nil))
-    assert_equal(Tokens::indexer, production.type)
+    production = get_production(method_call)
+    type = production.type
+
+    assert_equal(Tokens::indexer, type)
   end
 end

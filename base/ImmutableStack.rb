@@ -3,18 +3,20 @@ context :ImmutableStack do
   end
   role :tail do
   end
-  pop do
+
+  def pop
     [@head, @tail]
   end
-  push do |element|
+
+  def push(element)
     ImmutableStack.new element, self
   end
 
-  empty self do
+  def self.empty
     @@empty ||= self.new(nil, nil)
   end
 
-  each do
+  def each
     yield head
     t = tail
     while t != ImmutableStack::empty do
@@ -23,7 +25,7 @@ context :ImmutableStack do
     end
   end
 
-  initialize do |h, t|
+  def initialize(h, t)
     @head = h
     @tail = t
     self.freeze

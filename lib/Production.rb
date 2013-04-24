@@ -2,6 +2,7 @@ class Production
 
   def initialize(ast, interpretation_context)
     rebind(ImmutableQueue.empty.push(ast), interpretation_context)
+
   end
 
   def type()
@@ -23,28 +24,35 @@ class Production
       when self_production_is_call? then
         Tokens.call
       else
+        #p(("other " + production.to_s))
         Tokens.other
     end
+
   end
 
   def [](i)
     @production[i]
+
   end
 
   def []=(i, v)
     @production[i] = v
+
   end
 
   def length()
     @production.length
+
   end
 
   def last()
     @production.last
+
   end
 
   def first()
     @production.first
+
   end
 
   def data()
@@ -86,58 +94,58 @@ class Production
   attr_reader :queue
   attr_reader :production
 
+  def self_production_is_role?
 
-  def self_production_is_role?()
     case
-      when (self_production_is_call? and interpretation_context.roles.has_key?(production[2])) then
+      when self_production_is_call? && (interpretation_context.roles.has_key?(production[2]))
         @date = [production[2]]
         return true
-      when (((production == :self) or ((self_production_is_indexer? and ((production[1] == nil) or (production[1] == :self))) or (production and ((production.instance_of?(Sexp) or production.instance_of?(Array)) and (production[0] == :self))))) and @interpretation_context.defining_role) then
+      when (production == :self ||
+          (self_production_is_indexer? && (production[1] == nil || production[1] == :self)) ||
+          (production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) &&  production[0] == :self))) && @interpretation_context.defining_role
         @data = @interpretation_context.defining_role
         return true
       else
         false
     end
   end
-
-  def self_production_is_indexer?()
-    self_production_is_call? and ((production[2] == :[]) or (production[2] == :[]=))
+  def self_production_is_indexer?
+    self_production_is_call?  && (production[2] == :[] || production[2] == :[]=)
   end
 
-  def self_production_is_call?()
-    production and ((production.instance_of?(Sexp) or production.instance_of?(Array)) and (production[0] == :call))
+  def self_production_is_call?
+    production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) &&  production[0] == :call)
   end
 
-  def self_production_is_block?()
-    production and ((production.instance_of?(Sexp) or production.instance_of?(Array)) and (production[0] == :iter))
+  def self_production_is_block?
+    production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) &&  production[0] == :iter)
   end
 
-  def self_production_is_block_with_bind?()
-    if self_production_is_block? then
-      body = @production.last
-      if body and exp = body[0] then
-        bind = Production.new(exp, @interpretation_context)
-        true if (bind.type == Tokens.call) and (bind.data == :bind)
+  def self_production_is_block_with_bind?
+    if self_production_is_block?
+      body = last
+      if body && (exp = body[0])
+        bind = Production.new exp,@interpretation_context
+        if bind.type == Tokens::call && bind.data == :bind
+          true
+        end
       end
     end
   end
-
-  def self_production_is_rolemethod_call?()
+  def self_production_is_rolemethod_call?
     can_be = self_production_is_call?
-    if can_be then
-      instance = Production.new(production[1], @interpretation_context)
-      can_be = (instance.type == Tokens.role)
-      if can_be then
+    if can_be
+      instance = Production.new(production[1],@interpretation_context)
+      can_be = instance.type == Tokens::role
+      if can_be
         instance_data = instance.data
         role = @interpretation_context.roles[instance_data]
         data = production[2]
-        can_be = role.has_key?(data)
-        @data = [data, instance_data]
+        can_be = role && role.has_key?(data)
+        @data = [data,instance_data]
+
       end
     end
     can_be
-
   end
-
-
 end

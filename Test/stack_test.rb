@@ -1,7 +1,6 @@
 require 'test/unit'
 require_relative '../generated/ImmutableStack'
 
-ImmutableStack.new nil, nil
 
 class Stack_Test < Test::Unit::TestCase
 
