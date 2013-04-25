@@ -42,11 +42,9 @@ c = context :Context do
     @@generate_file_path ||= nil
     (alias :method_missing :role_or_interaction_method)
 
-    base_class, ctx, default_interaction, name = self.send(:create_context_factory, args, block)
-    if (args.last.instance_of?(FalseClass) or args.last.instance_of?(TrueClass)) then
-      ctx.generate_files_in(args.last)
-    end
-    return ctx.send(:finalize, name, base_class, default_interaction, @@generate_file_path, @@with_contracts)
+    ctx = self.send(:create_context_factory, args, block)
+
+    return ctx.send(:finalize, @@generate_file_path, @@with_contracts)
 
   end
 
@@ -85,7 +83,7 @@ c = context :Context do
     if base_class and ((not default_interaction) and (not base_class.instance_of?(Class))) then
       base_class, default_interaction = default_interaction, base_class
     end
-    ctx = Context.new
+    ctx = Context.new name, base_class, default_interaction
     ctx.instance_eval {
       sexp = block.to_sexp
       temp_block = sexp[3]
@@ -107,8 +105,7 @@ c = context :Context do
       ctx.instance_eval &block
     }
 
-    return [base_class, ctx, default_interaction, name]
-
+    ctx
   end
 
   def self.with_contracts(*args)
@@ -174,13 +171,13 @@ c = context :Context do
     (sources << info)
   end
 
-  def finalize(*args, &b)
-    return role_or_interaction_method(:finalize, *args, &b) if block_given?
-    name, base_class, default, file_path, with_contracts = *args
-    code = generate_context_code(default, name)
+  def finalize(file_path, with_contracts)
+    raise 'No name' unless @name
+    code = generate_context_code
+
     if file_path then
-      name = name.to_s
-      complete = ((((('class ' + name) + (base_class ? (('<< ' + base_class.name)) : (''))) + '
+      name = @name.to_s
+      complete = ((((('class ' + name) + (@base_class ? (('<< ' + @base_class.name)) : (''))) + '
       ') + code.to_s) + '
            end')
       File.open((((('./' + file_path.to_s) + '/') + name) + '.rb'), 'w') do |f|
@@ -188,7 +185,7 @@ c = context :Context do
       end
       complete
     else
-      c = base_class ? (Class.new(base_class)) : (Class.new)
+      c = @base_class ? (Class.new(base_class)) : (Class.new)
       if with_contracts then
         c.class_eval(
             'def self.assert_that(obj)
@@ -205,7 +202,7 @@ def self.contracts=(value)
 end')
         c.contracts = contracts
       end
-      Kernel.const_set(name, c)
+      Kernel.const_set(@name, c)
       begin
         temp = c.class_eval(code)
       rescue SyntaxError
@@ -217,22 +214,19 @@ end')
 
   end
 
-  def generate_context_code(*args, &b)
-    if block_given? then
-      return role_or_interaction_method(:generate_context_code, *args, &b)
-    end
-    default, name = args
+  def generate_context_code
+
     getters = ''
     impl = ''
     interactions = ''
     @interactions.each do |method_name, methods|
       methods.each do |method|
-        @defining_role = nil
+        defining_role = nil
         code = (' ' + method.build_as_context_method(current_interpretation_context))
         method.is_private ? ((getters << code)) : ((interactions << code))
       end
     end
-    if default then
+    if @default_interaction then
       (interactions << (((((((('
                def self.call(*args)
              arity = ' + name.to_s) + '.method(:new).arity
@@ -261,7 +255,7 @@ end')
           raise(('No source for ' + method_name.to_s))
         end
         method_source = method_sources[0]
-        @defining_role = role
+        defining_role = role
 
         definition = method_source.build_as_context_method(current_interpretation_context)
         (impl << ('   ' + definition.to_s)) if definition
@@ -292,11 +286,18 @@ end')
     @private = true
   end
 
-  def initialize
+  def initialize(name,base_class,default_interaction)
     @roles = {}
     @interactions = {}
     @role_alias = {}
+    @name = name
+    @base_class = base_class
+    @default_interaction = default_interaction
   end
+
+  role :name do end
+  role :base_class do end
+  role :default_interaction do end
 
 end
 
