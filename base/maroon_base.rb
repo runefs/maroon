@@ -118,8 +118,24 @@ c = context :Context do
 
   end
 
-  def createInfo(definition)
-    MethodInfo.new(definition, @defining_role, @private)
+  def name_from_def(definition)
+    if definition[1].instance_of? Symbol
+      definition[1]
+    else
+      (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s).to_sym
+    end
+  end
+
+  def create_info(definition)
+    name =  name_from_def definition
+
+    real_name = (if @defining_role == nil
+                   name.to_s
+                 else
+                   'self_' + @defining_role.to_s + '_' + name.to_s
+                 end).to_s
+    p real_name
+    MethodInfo.new(definition,real_name, @private)
   end
 
   def is_definition?(exp)
@@ -163,12 +179,10 @@ c = context :Context do
 
   end
 
-  def add_method(*args, &b)
-    return role_or_interaction_method(:add_method, *args, &b) if block_given?
-    exp = args[0]
-    info = createInfo exp
-    sources = get_methods(info.name)
-    (sources << info)
+  def add_method(exp)
+    name = name_from_def exp
+    sources = get_methods(name)
+    (sources << exp)
   end
 
   def finalize(file_path, with_contracts)
@@ -221,8 +235,9 @@ end')
     interactions = ''
     @interactions.each do |method_name, methods|
       methods.each do |method|
-        defining_role = nil
-        code = (' ' + method.build_as_context_method(current_interpretation_context))
+        @defining_role = nil
+        info = create_info(method)
+        code = (' ' + info.build_as_context_method(current_interpretation_context))
         method.is_private ? ((getters << code)) : ((interactions << code))
       end
     end
@@ -255,7 +270,7 @@ end')
           raise(('No source for ' + method_name.to_s))
         end
         method_source = method_sources[0]
-        defining_role = role
+        @defining_role = role
 
         definition = method_source.build_as_context_method(current_interpretation_context)
         (impl << ('   ' + definition.to_s)) if definition

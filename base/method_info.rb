@@ -1,8 +1,8 @@
 context :MethodInfo do
-  def initialize(ast, defining_role, is_private)
+  def initialize(ast,name, is_private)
     raise('Must be S-Expressions') unless ast.instance_of?(Sexp)
-
-    @defining_role = defining_role
+    raise 'Needs name' unless name
+    @name = name
     @private = is_private
     @definition = ast
     self.freeze
@@ -27,13 +27,7 @@ context :MethodInfo do
       args && args.length > 1 ? args[1..-1] : []
     end
 
-    def name
-        if definition[1].instance_of? Symbol
-          definition[1]
-        else
-          (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s).to_sym
-        end
-    end
+
   end
 
   def is_private
@@ -55,12 +49,7 @@ context :MethodInfo do
       args= ''
     end
 
-    real_name = (if @defining_role == nil
-                  name.to_s
-                else
-                  'self_' + @defining_role.to_s + '_' + name.to_s
-                end).to_s
-    header = 'def ' + real_name + args
+    header = 'def ' + @name.to_s + args
     header + ' ' + body + ' end
 '
   end

@@ -1,8 +1,10 @@
 require 'test/unit'
 require_relative 'test_helper'
+
 class MaroonInternal
 
 end
+
 class ContextTest < Test::Unit::TestCase
 
   def test_role_method_call
