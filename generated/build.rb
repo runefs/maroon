@@ -8,7 +8,7 @@ require_relative './ImmutableQueue'
 require_relative './interpretation_context'
 require_relative './Production'
 require_relative './AstRewritter'
-require_relative './MethodInfo'
+require_relative './Transformer'
 
 
 

@@ -45,12 +45,12 @@ while @queue.!=(ImmutableQueue.empty) do
   end
 end
  end
-
-     private
  def rebind(queue,ctx) @data = nil
 @production, @queue = queue.pop
 @interpretation_context = ctx
  end
+
+     private
 attr_reader :interpretation_context
       attr_reader :queue
       attr_reader :production

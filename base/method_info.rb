@@ -50,7 +50,6 @@ context :MethodInfo do
     end
 
     header = 'def ' + @name.to_s + args
-    header + ' ' + body + ' end
-'
+    header + ' ' + body + ' end'
   end
 end

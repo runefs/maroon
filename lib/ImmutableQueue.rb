@@ -21,12 +21,12 @@ end
 arr.each { |i| q = q.push(i) } if arr
 q
  end
-
-     private
  def initialize(front,back) @front = (front or ImmutableStack.empty)
 @back = (back or ImmutableStack.empty)
 self.freeze
  end
+
+     private
 attr_reader :front
       attr_reader :back
       
