@@ -48,7 +48,7 @@ c = context :Context do
     @@with_contracts ||= nil
     @@generate_file_path ||= nil
     ctx = self.send(:create_context_factory,  name, base_class, default_interaction, block)
-    transformer = Transformer.new name, ctx.roles,ctx.interactions,base_class, default_interaction
+    transformer = Transformer.new name, ctx.roles,ctx.interactions,ctx.private_interactions,base_class, default_interaction
     return transformer.transform @@generate_file_path, @@with_contracts
   end
 
@@ -64,6 +64,10 @@ c = context :Context do
   def interactions
     @interactions
   end
+  def private_interactions
+    @private_interactions
+  end
+
 
   private
 
@@ -146,6 +150,7 @@ c = context :Context do
     if @defining_role and (not sources) then
       @roles[@defining_role][name] = []
     else
+      @private_interactions[name] = true if @private
       @interactions[name] = []
     end
 
@@ -153,10 +158,11 @@ c = context :Context do
 
   def add_method(definition)
     name = if definition[1].instance_of? Symbol
-             definition[1].to_s
+             definition[1]
            else
-             (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s)
+             (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s).to_sym
            end
+
     sources = get_methods(name)
     (sources << definition)
   end
@@ -168,6 +174,7 @@ c = context :Context do
   def initialize(name,base_class,default_interaction)
     @roles = {}
     @interactions = {}
+    @private_interactions = {}
     @role_alias = {}
     @name = name
     @base_class = base_class

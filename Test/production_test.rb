@@ -8,6 +8,10 @@ class ProductionTest < Test::Unit::TestCase
     exp[3]
   end
 
+  def get_context(roles={},contracts={},role_aliases={},defining=nil,private_interactions= {})
+    InterpretationContext.new(roles, contracts, role_aliases,defining,private_interactions)
+  end
+
   def test_rolemethod
     method_call = get_method_call { foo.bar }
 
@@ -19,7 +23,7 @@ class ProductionTest < Test::Unit::TestCase
   def get_production(method_call)
     contracts ={}
     roles = {:foo => {:bar => []}}
-    Production.new(method_call, InterpretationContext.new(roles, contracts, nil, nil))
+    Production.new(method_call, get_context(roles, contracts))
   end
 
   def test_call

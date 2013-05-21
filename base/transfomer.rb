@@ -1,14 +1,17 @@
 context :Transformer do
 
-  def initialize(context_name, roles, interactions, base_class,default_interaction)
+  def initialize(context_name, roles, interactions,private_interactions, base_class,default_interaction)
     @context_name = context_name
 
     @roles = roles
     @interactions = interactions
     @base_class = base_class
     @default_interaction = default_interaction
+    @private_interactions = private_interactions
+    @definitions = {}
   end
 
+  role :private_interactions do end
   role :context_name do end
   role :roles do
      def generated_source
@@ -18,8 +21,8 @@ context :Transformer do
          getters << 'attr_reader :' + role.to_s + '
          '
          methods.each do |name, method_sources|
-           bind :method => :method_sources, :method_name => :name, :defining_role => role
-           definition = method.definition
+           bind :method_sources => :method , :name=> :method_name , :role => :defining_role
+           definition = method.generated_source
            (impl << ('   ' + definition )) if definition
          end
        end
@@ -32,10 +35,11 @@ context :Transformer do
     def generated_source
       internal_methods = ''
       external_methods = interactions.default
-      interactions.each do |name, methods|
-        methods.each do |method|
-          bind :method => :method_sources, :method_name => :name, :defining_role => nil
-          code = method.definition
+      interactions.each do |name, interact|
+        interact.each do |m|
+          bind :m => :method, :name => :method_name
+          @defining_role = nil
+          code = method.generated_source
 
           (method.is_private? ? internal_methods : external_methods) << ' ' << code
         end
@@ -73,40 +77,42 @@ context :Transformer do
       defining_role != nil || (private_interactions.has_key? method.name)
     end
     def definition
-      return @def if @def
-      unless (methods.instance_of? Array  && method_sources.length < 2) then
-        raise(('Duplicate definition of ' + method_name.to_s))
-      end
-      unless (methods.instance_of? Array  && method_sources.length > 0) then
-        raise(('No source for ' + method_name.to_s))
+      return @definitions[method_name] if @definitions.has_key? method_name
+      unless method.instance_of? Sexp
+        unless (method.instance_of? Array)  && method.length < 2 then
+          raise(('Duplicate definition of ' + method_name.to_s + '(' + method.to_s + ')'))
+        end
+        unless (method.instance_of? Array)  && method.length > 0 then
+          raise(('No source for ' + method_name.to_s))
+        end
       end
 
-      d = methods.instance_of? Array ? methods[0] : methods
+      d = (method.instance_of? Array) ? method[0] : method
       raise 'Sexp require' unless d.instance_of? Sexp
-      @def = d
+      @definitions[method_name] = d
     end
     def body
-      args = definition.detect { |d| d[0] == :args }
-      index = definition.index(args) + 1
-      if definition.length > index+1
-        body = definition[index..-1]
+      args = method.definition.detect { |d| d[0] == :args }
+      index = method.definition.index(args) + 1
+      if method.definition.length > index+1
+        body = method.definition[index..-1]
         body.insert(0, :block)
         body
       else
-        definition[index]
+        method.definition[index]
       end
     end
 
     def arguments
-      args = definition.detect { |d| d[0] == :args }
+      args = method.definition.detect { |d| d[0] == :args }
       args && args.length > 1 ? args[1..-1] : []
     end
 
     def name
-      name = if definition[1].instance_of? Symbol
-         definition[1].to_s
+      name = if method.definition[1].instance_of? Symbol
+               method.definition[1].to_s
       else
-        (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s)
+        (method.definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + method.definition[2].to_s)
       end
       (
       unless defining_role
@@ -175,4 +181,14 @@ end')
 
   end
 
+  private
+  def contracts
+    {}
+  end
+  def role_aliases
+    {}
+  end
+  def interpretation_context
+    InterpretationContext.new(roles, contracts, role_aliases, defining_role, @private_interactions)
+  end
 end

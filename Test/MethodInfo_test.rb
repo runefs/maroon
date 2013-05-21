@@ -11,6 +11,10 @@ class MethodInfoTest < Test::Unit::TestCase
      end
    end
 
+  def get_context(roles={},contracts={},role_aliases={},defining=nil,private_interactions= {})
+    InterpretationContext.new(roles, contracts, role_aliases,defining,private_interactions)
+  end
+
   def test_simple
     block = get_def  do
       def name (a, b)
@@ -18,7 +22,7 @@ class MethodInfoTest < Test::Unit::TestCase
       end
     end
 
-    source = MethodInfo.new( block,:name,false).build_as_context_method( InterpretationContext.new({}, {}, {}, nil))
+    source = MethodInfo.new( block,:name,false).build_as_context_method( get_context({}, {}, {}, nil))
     expected ='def name(a,b)    p("this is a test") end'
     assert_source_equal(expected, source)
   end
@@ -30,7 +34,7 @@ class MethodInfoTest < Test::Unit::TestCase
       end
     end
 
-    source = MethodInfo.new( block,:name,false).build_as_context_method( InterpretationContext.new({:foo=>{:bar=>[]}}, {}, {}, nil))
+    source = MethodInfo.new( block,:name,false).build_as_context_method( get_context({:foo=>{:bar=>[]}}, {}, {}, nil))
     expected ='def name(a,b)    self_foo_bar end'
     assert_source_equal(expected, source)
   end
@@ -42,7 +46,7 @@ class MethodInfoTest < Test::Unit::TestCase
       end
     end
 
-    source = MethodInfo.new( block,:'self.name',false).build_as_context_method( InterpretationContext.new({}, {}, {}, nil))
+    source = MethodInfo.new( block,:'self.name',false).build_as_context_method( get_context({}, {}, {}, nil))
     expected = 'def self.name(a,b)  p("this is a test") end'
 
     assert_source_equal(expected, source)
@@ -54,7 +58,7 @@ class MethodInfoTest < Test::Unit::TestCase
       p 'this is a test'
       end
     end
-    source = MethodInfo.new( block,:name,false).build_as_context_method( InterpretationContext.new({}, {}, {}, nil))
+    source = MethodInfo.new( block,:name,false).build_as_context_method( get_context({}, {}, {}, nil))
     expected = 'def name(a,*b) p("this is a test") end'
     assert_source_equal(expected, source)
   end
@@ -67,7 +71,7 @@ class MethodInfoTest < Test::Unit::TestCase
     end
 
     source = MethodInfo.new( block,:name,false)
-    source = source.build_as_context_method(InterpretationContext.new({}, {}, {}, nil))
+    source = source.build_as_context_method(get_context({}, {}, {}, nil))
     expected = 'def name(a,b,&block)    p("this is a test")  end'
 
     assert_source_equal(expected, source)
@@ -79,7 +83,7 @@ class MethodInfoTest < Test::Unit::TestCase
         p 'is a test'
       end
     end
-    source = MethodInfo.new( block,:'self.name',false).build_as_context_method( InterpretationContext.new({}, {}, {}, nil))
+    source = MethodInfo.new( block,:'self.name',false).build_as_context_method( get_context({}, {}, {}, nil))
     expected = 'def self.name(a,*b,&block) p("is a test") end'
     assert_source_equal(expected, source)
   end

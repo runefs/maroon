@@ -36,9 +36,19 @@ context :Production do
     def is_block_with_bind?
       if production.is_block?
         body = @production.last()
-        if body && (exp = body[0])
+        if body && (exp = body[1])
           bind = Production.new exp, @interpretation_context
           if bind.type == Tokens::call && bind.data == :bind
+            aliases = {}
+            list = exp.last[1..-1]
+            (list.length/2).times{|i|
+              local = list[i*2].last
+              role_name = list[i*2+1].last
+              raise 'Local in bind should be a symbol' unless local.instance_of? Symbol
+              raise 'Role name in bind should be a symbol' unless role_name.instance_of? Symbol
+              aliases[local] = role_name
+            }
+            @data = aliases
             true
           end
         end
