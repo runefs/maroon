@@ -1,4 +1,4 @@
-context :Production do
+context :AbstractSyntaxTree do
   role :interpretation_context do
   end
   role :queue do
@@ -37,7 +37,7 @@ context :Production do
       if production.is_block?
         body = @production.last()
         if body && (exp = body[1])
-          bind = Production.new exp, @interpretation_context
+          bind = AbstractSyntaxTree.new exp, @interpretation_context
           if bind.type == Tokens::call && bind.data == :bind
             aliases = {}
             list = exp.last[1..-1]
@@ -58,7 +58,7 @@ context :Production do
     def is_rolemethod_call?
       can_be = production.is_call?
       if can_be
-        instance = Production.new(production[1], @interpretation_context)
+        instance = AbstractSyntaxTree.new(production[1], @interpretation_context)
         can_be = instance.type == Tokens::role
         if can_be
           instance_data = instance.data
@@ -130,7 +130,7 @@ context :Production do
             end
   end
 
-  def each
+  def each_production
     yield self
     if production.instance_of? Sexp || production.instance_of?(Array)
       @queue = @queue.push_array production

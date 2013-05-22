@@ -77,7 +77,8 @@ context :Transformer do
       defining_role != nil || (private_interactions.has_key? method.name)
     end
     def definition
-      return @definitions[method_name] if @definitions.has_key? method_name
+      key = (@defining_role ? @defining_role.to_s : '') + method_name.to_s
+      return @definitions[key] if @definitions.has_key? key
       unless method.instance_of? Sexp
         unless (method.instance_of? Array)  && method.length < 2 then
           raise(('Duplicate definition of ' + method_name.to_s + '(' + method.to_s + ')'))
@@ -89,7 +90,7 @@ context :Transformer do
 
       d = (method.instance_of? Array) ? method[0] : method
       raise 'Sexp require' unless d.instance_of? Sexp
-      @definitions[method_name] = d
+      @definitions[key] = d
     end
     def body
       args = method.definition.detect { |d| d[0] == :args }
@@ -133,7 +134,8 @@ context :Transformer do
       end
 
       header = 'def ' + method.name.to_s + args
-      header + ' ' + body + ' end'
+      header + ' ' + body + ' end
+'
     end
   end
 
@@ -182,11 +184,12 @@ end')
   end
 
   private
+
   def contracts
-    {}
+    (@contracts ||= {})
   end
   def role_aliases
-    {}
+    (@role_aliases ||={})
   end
   def interpretation_context
     InterpretationContext.new(roles, contracts, role_aliases, defining_role, @private_interactions)

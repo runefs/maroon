@@ -3,12 +3,12 @@ context :AstRewritter do
   end
 
   def initialize (ast, interpretation_context)
-    @ast = Production.new ast, interpretation_context
+    @ast = AbstractSyntaxTree.new ast, interpretation_context
     @roles = interpretation_context.roles
   end
 
   def rewrite!
-    ast.each { |production|
+    ast.each_production { |production|
 
       case production.type
         when Tokens::rolemethod_call

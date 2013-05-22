@@ -27,8 +27,9 @@ class ImmutableStack
   end
 
   private
+
+
   attr_reader :head
   attr_reader :tail
-
 
 end

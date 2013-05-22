@@ -13,16 +13,16 @@ class AstRewritter
           production[1] = nil
         when Tokens.block_with_bind then
           block = production.last
-          block.delete_at 1
+          block.delete_at(1)
           production.data.each do |local, aliased_role|
-            raise ('aliased_role ('+ aliased_role.to_s() +') must be a Symbol') unless aliased_role.instance_of? Symbol
-            raise 'local must be a Symbol' unless local.instance_of? Symbol
-            unless @roles.has_key? aliased_role
+            must_b_sym = "aliased_role must be a Symbol".to_sym
+            local_must_b_sym = "local must be a Symbol".to_sym
+            raise(must_b_sym) unless aliased_role.instance_of?(Symbol)
+            raise(local_must_b_sym) unless local.instance_of?(Symbol)
+            unless @roles.has_key?(aliased_role) then
               role_names = []
-              @interpretation_context.each do |k, v|
-                role_names << k.to_s
-              end
-              raise aliased_role.to_s + ' is not a role. Available roles are ' + role_names.join(',')
+              @interpretation_context.each { |k, v| (role_names << k.to_s) }
+              raise(((aliased_role.to_s + " is not a role. Available roles are ") + role_names.join(",")))
             end
             aliased_field = ("@" + aliased_role.to_s).to_sym
             temp_symbol = ("temp____" + aliased_role.to_s).to_sym
@@ -58,7 +58,8 @@ class AstRewritter
   end
 
   private
-  attr_reader :ast
 
+
+  attr_reader :ast
 
 end

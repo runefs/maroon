@@ -2,6 +2,7 @@ require 'test/unit'
 require_relative '../generated/Tokens'
 require_relative '../generated/Production'
 require_relative 'test_helper'
+
 class ProductionTest < Test::Unit::TestCase
   def get_method_call &b
     exp = get_sexp &b
@@ -23,7 +24,7 @@ class ProductionTest < Test::Unit::TestCase
   def get_production(method_call)
     contracts ={}
     roles = {:foo => {:bar => []}}
-    Production.new(method_call, get_context(roles, contracts))
+    AbstractSyntaxTree.new(method_call, get_context(roles, contracts))
   end
 
   def test_call

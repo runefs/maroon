@@ -70,16 +70,12 @@ class Production
     end
   end
 
+  private
   def rebind(queue, ctx)
     @data = nil
     @production, @queue = queue.pop
     @interpretation_context = ctx
   end
-
-  private
-  attr_reader :interpretation_context
-  attr_reader :queue
-  attr_reader :production
 
   def self_production_is_role?()
     case
@@ -109,18 +105,20 @@ class Production
   def self_production_is_block_with_bind?()
     if self_production_is_block? then
       body = @production.last
-      if body && (exp = body[1])
-        bind = Production.new exp, @interpretation_context
-        if bind.type == Tokens::call && bind.data == :bind
+      if body and exp = body[1] then
+        bind = Production.new(exp, @interpretation_context)
+        if (bind.type == Tokens.call) and (bind.data == :bind) then
           aliases = {}
-          list = exp.last[1..-1]
-          (list.length/2).times{|i|
-            local = list[i*2].last
-            role_name = list[i*2+1].last
-            raise 'Local in bind should be a symbol' unless local.instance_of? Symbol
-            raise 'Role name in bind should be a symbol' unless role_name.instance_of? Symbol
+          list = exp.last[(1..-1)]
+          (list.length / 2).times do |i|
+            local = list[(i * 2)].last
+            role_name = list[((i * 2) + 1)].last
+            raise("Local in bind should be a symbol") unless local.instance_of?(Symbol)
+            unless role_name.instance_of?(Symbol) then
+              raise("Role name in bind should be a symbol")
+            end
             aliases[local] = role_name
-          }
+          end
           @data = aliases
           true
         end
@@ -143,5 +141,9 @@ class Production
     end
     can_be
   end
+
+  attr_reader :interpretation_context
+  attr_reader :queue
+  attr_reader :production
 
 end
