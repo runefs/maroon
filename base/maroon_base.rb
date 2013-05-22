@@ -10,7 +10,7 @@
 # With in the block supplied to the role method you can define role methods the same way as you define interactions. See the method who
 # in the below example
 # = Example
-#    Context::define :Greeter do
+#    Contetx.define :Greeter do
 #        role :who do
 #          say do
 #            @who #could be self as well to refer to the current role player of the 'who' role

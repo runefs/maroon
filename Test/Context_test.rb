@@ -11,7 +11,7 @@ class ContextTest < Test::Unit::TestCase
     name = :MyContextRoleMethodCall
     role_name = :rol
 
-    c=Context::define name do
+    c=Contetx.define name do
       role role_name do
         def rolem(x, y)
           x+y
@@ -29,7 +29,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_simple
     name = :MyContextSimple
     role_name = :r
-    Context::define name do
+    Contetx.define name do
       role role_name do
       end
     end
@@ -39,7 +39,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_bind
     name = :MyContextBind
 
-    c= Context::define name do
+    c= Contetx.define name do
       role :role_name do
         def sum
           @sum += role_name
@@ -61,7 +61,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_role_method
     name = :MyContext
     role_name = :rol
-    Context::define name do
+    Contetx.define name do
       role role_name do
         def rolem
           0+1
@@ -74,7 +74,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_role_method_args
     name = :MyContextArgs
     role_name = :rol
-    Context::define name do
+    Contetx.define name do
       role role_name do
         def rolem(x, y)
           x+y
@@ -87,7 +87,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_role_method_splat
     name = :MyContextSplat
     role_name = :rol
-    Context::define name do
+    Contetx.define name do
       role role_name do
         def rolem(x, *args)
           x+(args[0])
@@ -100,7 +100,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_role_method_block
     name = :MyContextBlock
     role_name = :rol
-    c= Context::define name do
+    c= Contetx.define name do
       role :num do
         def next
           num + 3
@@ -124,7 +124,7 @@ class ContextTest < Test::Unit::TestCase
   def xtest_class_method_block
     name = :MyContextClass
     role_name = :rol
-    Context::define name do
+    Contetx.define name do
       role :dummy do end
       role role_name do
         def rolem(*args, &b)

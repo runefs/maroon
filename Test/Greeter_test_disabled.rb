@@ -12,7 +12,7 @@ class BasicTests < MiniTest::Unit::TestCase
 
   def test_define_context
     name = :MyContext
-    ctx, source = Context::define name do
+    ctx, source = Contetx.define name do
     end
     assert_equal(ctx.name, "Kernel::#{name}")
     assert_equal(source, "class #{name}\r\n\n\n  private\n\n\n\r\nend")
@@ -32,7 +32,7 @@ class BasicTests < MiniTest::Unit::TestCase
 
   def test_define_role
     name, role_name = :MyContextWithRole, :my_role
-    ctx, source = Context::define name do
+    ctx, source = Contetx.define name do
       role role_name do
         role_go_do do
 
@@ -46,7 +46,7 @@ class BasicTests < MiniTest::Unit::TestCase
 
   def test_args_on_role_method
     name, role_name = :MyContextWithRoleAndArgs, :my_role
-    ctx, source = Context::define name do
+    ctx, source = Contetx.define name do
       role role_name do
         role_go_do do |x, y|
 
@@ -63,7 +63,7 @@ class BasicTests < MiniTest::Unit::TestCase
 
   def test_bind
     name, other_name = :MyContextUsingBind, :other_role
-    ctx, source = Context::define name do
+    ctx, source = Contetx.define name do
       role other_name do
         plus_one do
           (self + 1)
