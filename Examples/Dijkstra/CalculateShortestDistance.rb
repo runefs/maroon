@@ -1,4 +1,4 @@
-Contetx.define :CalculateShortestDistance do
+Context.define :CalculateShortestDistance do
 
   role :tentative_distance_values do
   end

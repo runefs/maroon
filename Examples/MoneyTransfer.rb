@@ -1,6 +1,6 @@
 require './lib/maroon.rb'
 
-Contetx.define :MoneyTransfer do
+Context.define :MoneyTransfer do
   role :source do
     withdraw do |amount|
       source.movement(amount)
