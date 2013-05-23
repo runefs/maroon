@@ -1,9 +1,9 @@
 require 'test/unit'
 require_relative '../generated/Tokens'
-require_relative '../generated/Production'
+require_relative '../generated/AbstractSyntaxTree'
 require_relative 'test_helper'
 
-class ProductionTest < Test::Unit::TestCase
+class AbstractSyntaxTreeTest < Test::Unit::TestCase
   def get_method_call &b
     exp = get_sexp &b
     exp[3]

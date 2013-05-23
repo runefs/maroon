@@ -1,10 +1,14 @@
 # -*- encoding: utf-8 -*-
-require './Lib/maroon.rb'
-require './Examples/Dijkstra/data.rb'
-require './Examples/Dijkstra/CalculateShortestDistance.rb'
-require './Examples/Dijkstra/Calculate_Shortest_Path.rb'
+require_relative '../../lib/maroon.rb'
+require_relative 'data.rb'
+require_relative 'CalculateShortestDistance.rb'
+require_relative 'Calculate_Shortest_Path.rb'
+require 'test/unit'
+require_relative 'test_helper'
+
+class DijkstraTest < Test::Unit::TestCase
 #!/usr/bin/env ruby
-# Example in Ruby -- Dijkstra's algorithm in DCI
+# Example in Ruby -- DijkstraTest's algorithm in DCI
 #    Modified and simplified for a Manhattan geometry with 8 roles
 #
 #
@@ -59,27 +63,33 @@ require './Examples/Dijkstra/Calculate_Shortest_Path.rb'
 
 # --- Main Program: test driver
 #
-geometries = Geometry_1.new
-path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
-print 'Path is: '
-path.each { |node| print "#{node.name} " }
-print "\n"
-puts "distance is #{CalculateShortestDistance.new(geometries.root, geometries).distance}"
-
-puts ''
-
-geometries = ManhattanGeometry2.new
-path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
-print 'Path is: '
-last_node = nil
-path.each do |node|
-  if last_node != nil;
-    print " - #{geometries.distances[Edge.new(node, last_node)]} - "
+  def test_geometry_1
+    geometries = Geometry_1.new
+    path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
+    print 'Path is: '
+    path.each { |node| print "#{node.name} " }
+    print "\n"
+    result = CalculateShortestDistance.new(geometries.root, geometries).distance
+    assert_equal("", result)
   end
-  print "#{node.name}"
-  last_node = node
-end
-print "\n"
 
-geometries = ManhattanGeometry2.new
-puts "distance is #{CalculateShortestDistance.new(geometries.root, geometries).distance }"
+
+  def test_geometry_2
+    geometries = ManhattanGeometry2.new
+    path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
+
+    last_node = nil
+    path = ""
+    result = nil
+    path.each do |node|
+      if last_node != nil;
+        result = geometries.distances[Edge.new(node, last_node)]
+      end
+      path << "#{node.name}"
+      last_node = node
+    end
+    assert_equal(nil, result)
+    assert_equal(nil, path)
+    assert_equal(nil, last_node)
+  end
+

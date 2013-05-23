@@ -1,8 +1,10 @@
+require_relative '../../lib/maroon/kernel'
+
 # -*- encoding: utf-8 -*-
 #
 # Consider street corners on a Manhattan grid. We want to find the
 # minimal path from the most northeast city to the most
-# southeast city. Use Dijkstra's algorithm
+# southeast city. Use DijkstraTest's algorithm
 #
 
 
@@ -29,7 +31,7 @@
 #
 # The algorithm is straight from Wikipedia:
 #
-# http://en.wikipedia.org/wiki/Dijkstra's_algorithm
+# http://en.wikipedia.org/wiki/DijkstraTest's_algorithm
 #
 # and reads directly from the distance method, below
 
@@ -38,42 +40,36 @@
 #
 # Map is a DCI role. The role in this example is played by an
 # object representing a particular Manhattan geometry
-ctx, source = Context.define :CalculateShortestPath do
+context :CalculateShortestPath do
   role :distance_labeled_graph_node do
     # Access to roles and other Context data
-    tentative_distance_values do
+    def tentative_distance_values
       tentative_distance_values
     end
     # Role Methods
-    tentative_distance do
+    def tentative_distance
       tentative_distance_values[@distance_labeled_graph_node]
     end
-    set_tentative_distance_to do |x|
+    def set_tentative_distance_to(x)
       tentative_distance_values[@distance_labeled_graph_node] = x
     end
   end
 
   # These are handles to to the roles
   role :map do
-    distance_between do |a, b|
-      dist = @map.distances[Edge.new(a, b)]
-      # p "distance between #{a.name} and #{b.name} is #{dist}"
-      dist
+    def distance_between(a, b)
+      @map.distances[Edge.new(a, b)]
     end
-    next_down_the_street_from do |x|
-      n = east_neighbor_of x
-      # p "next down the street from #{x.name} is #{n.name}"
-      n
+    def next_down_the_street_from(x)
+      east_neighbor_of x
     end
-    next_along_the_avenue_from do |x|
-      n = south_neighbor_of x
-      # p "next along the avenue from #{x.name} is #{n.name}"
-      n
+    def next_along_the_avenue_from(x)
+      south_neighbor_of x
     end
-    origin do
+    def origin
       map.root
     end
-    nearest_unvisited_node_to_target do
+    def nearest_unvisited_node_to_target
       min = infinity
       selection = nil
       @unvisited.each_key {
@@ -90,19 +86,19 @@ ctx, source = Context.define :CalculateShortestPath do
       }
       selection
     end
-    unvisited do
+    def unvisited
       @unvisited
     end
   end
 
   role :current do
     # Access to roles and other Context data
-    unvisited do
+    def unvisited
       map.unvisited
     end
 
     # Role Methods
-    unvisited_neighbors do
+    def unvisited_neighbors
       retval = Array.new
       if @south_neighbor != nil
         if unvisited[@south_neighbor] then
@@ -117,7 +113,7 @@ ctx, source = Context.define :CalculateShortestPath do
       # p "unvisited neighbors #{retval}"
       retval
     end
-    tentative_distance do
+    def tentative_distance
       raise "key (#{current}) not found in #{@tentative_distance_values}" unless @tentative_distance_values && (@tentative_distance_values.has_key? current)
       @tentative_distance_values[current]
     end
@@ -130,7 +126,7 @@ ctx, source = Context.define :CalculateShortestPath do
 # east_neighbor and south_neighbor roles
 
   role :neighbor_node do
-    relable_node_as do |x|
+    def relable_node_as(x)
       raise "Argument can't be nil" unless x
       raise "self can't be nil" unless @neighbor_node
 
@@ -145,11 +141,11 @@ ctx, source = Context.define :CalculateShortestPath do
     end
 
     # Role Methods
-    tentative_distance do
+    def tentative_distance
       raise "self can't be nil" unless @neighbor_node
       tentative_distance_values[@neighbor_node]
     end
-    set_tentative_distance_to do |x|
+    def set_tentative_distance_to(x)
       raise "Argument can't be nil" unless x
       raise "self can't be nil" unless @neighbor_node
       tentative_distance_values[@neighbor_node] = x
@@ -157,7 +153,7 @@ ctx, source = Context.define :CalculateShortestPath do
   end
 # This is the method that starts the work. Called from initialize.
 
-  execute do |path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash|
+  def execute (path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash)
     do_inits(path_vector, unvisited_hash, pathto_hash,
              tentative_distance_values_hash)
 
@@ -200,7 +196,7 @@ ctx, source = Context.define :CalculateShortestPath do
     end
   end
 
-  do_inits do |path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash|
+  def do_inits(path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash)
 
     # The conditional switches between the first and subsequent instances of the
     # recursion (the algorithm is recursive in graph contexts)
@@ -213,7 +209,7 @@ ctx, source = Context.define :CalculateShortestPath do
           # Since path_vector isn't set up, this is the first iteration of the recursion
           @tentative_distance_values = Hash.new
 
-          # This is the fundamental data structure for Dijkstra's algorithm, called
+          # This is the fundamental data structure for DijkstraTest's algorithm, called
           # "Q" in the Wikipedia description. It is a boolean hash that maps a
           # node onto false or true according to whether it has been visited
 
@@ -253,7 +249,7 @@ ctx, source = Context.define :CalculateShortestPath do
 
       @tentative_distance_values = Hash.new
 
-      # This is the fundamental data structure for Dijkstra's algorithm, called
+      # This is the fundamental data structure for DijkstraTest's algorithm, called
       # "Q" in the Wikipedia description. It is a boolean hash that maps a
       # node onto false or true according to whether it has been visited
 
@@ -295,9 +291,8 @@ ctx, source = Context.define :CalculateShortestPath do
       @pathTo = pathto_hash
     end
   end
-end
 
-class CalculateShortestPath
+  private
 
   def pathTo
     @pathTo
@@ -369,6 +364,3 @@ class CalculateShortestPath
     end while node != nil
   end
 end
-
-File.open('CalculateShortestPath_generated.rb', 'w') { |f| f.write(source) }
-
