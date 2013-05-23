@@ -38,7 +38,7 @@
 #
 # Map is a DCI role. The role in this example is played by an
 # object representing a particular Manhattan geometry
-ctx, source = Context::define :CalculateShortestPath do
+ctx, source = Context.define :CalculateShortestPath do
   role :distance_labeled_graph_node do
     # Access to roles and other Context data
     tentative_distance_values do

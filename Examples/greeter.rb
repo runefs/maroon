@@ -8,7 +8,7 @@ class Person
   attr_accessor :greeting
 end
 
-ctx, source = Context::define :Greet_Someone, :greet do
+ctx, source = Context.define :Greet_Someone, :greet do
   role :greeter do
     welcome do
       self.greeting
