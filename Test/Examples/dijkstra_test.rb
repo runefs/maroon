@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
-require_relative '../../lib/maroon.rb'
+require 'test/unit'
+require_relative '../test_helper'
 require_relative 'data.rb'
 require_relative 'CalculateShortestDistance.rb'
 require_relative 'Calculate_Shortest_Path.rb'
-require 'test/unit'
-require_relative 'test_helper'
+
 
 class DijkstraTest < Test::Unit::TestCase
 #!/usr/bin/env ruby
@@ -65,31 +65,31 @@ class DijkstraTest < Test::Unit::TestCase
 #
   def test_geometry_1
     geometries = Geometry_1.new
-    path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
-    print 'Path is: '
-    path.each { |node| print "#{node.name} " }
-    print "\n"
-    result = CalculateShortestDistance.new(geometries.root, geometries).distance
-    assert_equal("", result)
+    path = []
+    CalculateShortestPath.new(geometries.root, geometries.destination, geometries,nil,nil,nil,nil).each { |node| path << "#{node.name} " }
+    distance = CalculateShortestDistance.new(geometries.root, geometries).distance
+    assert_equal(["'i' ","'h' ","'g' ","'d' ","'a' "], path)
+    assert_equal(6,distance)
   end
 
 
   def test_geometry_2
     geometries = ManhattanGeometry2.new
-    path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries)
+    path = CalculateShortestPath.new(geometries.root, geometries.destination, geometries,nil,nil,nil,nil)
 
     last_node = nil
-    path = ""
-    result = nil
+    res = []
+    result = []
     path.each do |node|
       if last_node != nil;
-        result = geometries.distances[Edge.new(node, last_node)]
+        result << geometries.distances[Edge.new(node, last_node)]
       end
-      path << "#{node.name}"
+      res << "#{node.name}"
       last_node = node
     end
-    assert_equal(nil, result)
-    assert_equal(nil, path)
-    assert_equal(nil, last_node)
+    assert_equal([1,1,3,2], result)
+    assert_equal(["'k'", "'j'", "'c'", "'b'", "'a'"], res)
   end
+end
+
 

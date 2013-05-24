@@ -1,4 +1,5 @@
-Context.define :CalculateShortestDistance do
+
+context :CalculateShortestDistance do
 
   role :tentative_distance_values do
   end
@@ -12,40 +13,40 @@ Context.define :CalculateShortestDistance do
 
 
   role :map do
-    distance_between do |a, b|
+    def distance_between(a, b)
       map.distances[Edge.new(a, b)]
     end
 
     # These two functions presume always travelling
     # in a southern or easterly direction
-    next_down_the_street_from do |x|
+    def next_down_the_street_from(x)
       map.east_neighbor_of x
     end
 
-    next_along_the_avenue_from do |x|
+    def next_along_the_avenue_from(x)
       map.south_neighbor_of x
     end
   end
 
   role :current do
-    tentative_distance do
+    def tentative_distance
       tentative_distance_values[current]
     end
-    set_tentative_distance_to do |x|
+    def set_tentative_distance_to(x)
       tentative_distance_values[current] = x
     end
   end
 
 
-  rebind do |origin_node, geometries|
+  def rebind(origin_node, geometries)
     @current = origin_node
     @destination = geometries.destination
     @map = geometries
   end
 
-  distance do
-    current.set_tentative_distance_to 0
-    @path = CalculateShortestPath.new(current, destination, map).path
+  def distance
+    current.set_tentative_distance_to(0)
+    @path = CalculateShortestPath.new(current, destination, map,nil,nil,nil,nil).path
     retval = 0
     previous_node = nil
     path.reverse_each { |node|
@@ -59,9 +60,6 @@ Context.define :CalculateShortestDistance do
     retval
   end
 
-end
-
-class CalculateShortestDistance
   def initialize(origin_node, geometries)
     rebind(origin_node, geometries)
     @tentative_distance_values = Hash.new

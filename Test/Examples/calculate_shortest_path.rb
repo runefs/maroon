@@ -36,11 +36,28 @@ require_relative '../../lib/maroon/kernel'
 # and reads directly from the distance method, below
 
 
-# "Map" as in cartography rather than Computer Science...
+# Map as in cartography rather than Computer Science...
 #
 # Map is a DCI role. The role in this example is played by an
 # object representing a particular Manhattan geometry
-context :CalculateShortestPath do
+#Context::generate_files_in('.')
+c = context :CalculateShortestPath do
+  # public initialize. It's overloaded so that the public version doesn't
+  # have to pass a lot of crap; the initialize method takes care of
+  # setting up internal data structures on the first invocation. On
+  # recursion we override the defaults
+
+  def initialize(origin_node, target_node, geometries,
+      path_vector, unvisited_hash, pathto_hash,
+      tentative_distance_values_hash)
+    @destination = target_node
+
+    rebind(origin_node, geometries)
+
+    execute(path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash)
+  end
+
+
   role :distance_labeled_graph_node do
     # Access to roles and other Context data
     def tentative_distance_values
@@ -75,12 +92,12 @@ context :CalculateShortestPath do
       @unvisited.each_key {
           |intersection|
         bind :intersection => :distance_labeled_graph_node
-        if @unvisited[intersection]
-          tentative_distance = intersection.tentative_distance
+        if @unvisited[distance_labeled_graph_node]
+          tentative_distance = distance_labeled_graph_node.tentative_distance
           if tentative_distance < min
-            # p "min distance is updated from #{min} to #{tentative_distance}"
+
             min = tentative_distance
-            selection = intersection
+            selection = distance_labeled_graph_node
           end
         end
       }
@@ -110,11 +127,10 @@ context :CalculateShortestPath do
           retval << @east_neighbor
         end
       end
-      # p "unvisited neighbors #{retval}"
+
       retval
     end
     def tentative_distance
-      raise "key (#{current}) not found in #{@tentative_distance_values}" unless @tentative_distance_values && (@tentative_distance_values.has_key? current)
       @tentative_distance_values[current]
     end
   end
@@ -127,27 +143,25 @@ context :CalculateShortestPath do
 
   role :neighbor_node do
     def relable_node_as(x)
-      raise "Argument can't be nil" unless x
-      raise "self can't be nil" unless @neighbor_node
+      raise 'Argument cannot be nil' unless x
+      raise 'self cannot be nil' unless @neighbor_node
 
       if x < neighbor_node.tentative_distance
-        # p "updated tentative distance from #{neighbor_node.tentative_distance} to #{x}"
         neighbor_node.set_tentative_distance_to x
         :distance_was_udated
       else
-        # p "left tentative distance at #{neighbor_node.tentative_distance} instead of #{x}"
         :distance_was_not_udated
       end
     end
 
     # Role Methods
     def tentative_distance
-      raise "self can't be nil" unless @neighbor_node
+      raise 'self cannot be nil' unless @neighbor_node
       tentative_distance_values[@neighbor_node]
     end
     def set_tentative_distance_to(x)
-      raise "Argument can't be nil" unless x
-      raise "self can't be nil" unless @neighbor_node
+      raise 'Argument cannot be nil' unless x
+      raise 'self cannot be nil' unless @neighbor_node
       tentative_distance_values[@neighbor_node] = x
     end
   end
@@ -161,21 +175,19 @@ context :CalculateShortestPath do
     # Calculate tentative distances of unvisited neighbors
 
     unvisited_neighbors = current.unvisited_neighbors
-    # p "#{unvisited_neighbors}"
+
     if unvisited_neighbors != nil
       unvisited_neighbors.each {
           |neighbor|
         bind :neighbor => :neighbor_node
         tentative_distance = current.tentative_distance
-        raise "tentative distance can't be nil" if tentative_distance == nil
+        raise 'tentative distance cannot be nil' if tentative_distance == nil
         distance_between = map.distance_between(current, neighbor)
-        raise "distance between can't be nil" if distance_between == nil
+        raise 'distance between cannot be nil' if distance_between == nil
         net_distance = tentative_distance + distance_between
 
-        if neighbor.relable_node_as(net_distance) == :distance_was_udated
-          # p "set path"
+        if neighbor_node.relable_node_as(net_distance) == :distance_was_udated
           pathTo[neighbor] = @current
-          # p "path #{@pathTo}"
         end
       }
     end
@@ -210,7 +222,7 @@ context :CalculateShortestPath do
           @tentative_distance_values = Hash.new
 
           # This is the fundamental data structure for DijkstraTest's algorithm, called
-          # "Q" in the Wikipedia description. It is a boolean hash that maps a
+          # Q in the Wikipedia description. It is a boolean hash that maps a
           # node onto false or true according to whether it has been visited
 
           @unvisited = Hash.new
@@ -218,13 +230,13 @@ context :CalculateShortestPath do
           # These initializations are directly from the description of the algorithm
           map.nodes.each { |node| @unvisited[node] = true }
           @unvisited.delete(map.origin)
-          map.nodes.each { |node| bind :node => :distance_labeled_graph_node; node.set_tentative_distance_to(infinity) }
+          map.nodes.each { |node| bind :node => :distance_labeled_graph_node; distance_labeled_graph_node.set_tentative_distance_to(infinity) }
           tentative_distance_values[map.origin] = 0
 
           # The path array is kept in the outermost context and serves to store the
           # return path. Each recurring context may add something to the array along
           # the way. However, because of the nature of the algorithm, individual
-          # Context instances don't deliver "partial paths" as partial answers.
+          # Context instances don't deliver partial paths as partial answers.
           @path = Array.new
 
           # The pathTo map is a local associative array that remembers the
@@ -250,7 +262,7 @@ context :CalculateShortestPath do
       @tentative_distance_values = Hash.new
 
       # This is the fundamental data structure for DijkstraTest's algorithm, called
-      # "Q" in the Wikipedia description. It is a boolean hash that maps a
+      # Q in the Wikipedia description. It is a boolean hash that maps a
       # node onto false or true according to whether it has been visited
 
       @unvisited = Hash.new
@@ -258,11 +270,10 @@ context :CalculateShortestPath do
       # These initializations are directly from the description of the algorithm
       map.nodes.each { |node| @unvisited[node] = true }
       @unvisited.delete(map.origin)
-      # p "map #{map.nodes}"
+
       map.nodes.each { |node|
-        bind :node => :distance_labeled_graph_node;
-        node.set_tentative_distance_to(infinity)
-        # p "initialized node #{node.name}"
+        bind :node => :distance_labeled_graph_node
+        distance_labeled_graph_node.set_tentative_distance_to(infinity)
       }
       tentative_distance_values[map.origin] = 0
 
@@ -270,7 +281,7 @@ context :CalculateShortestPath do
       # The path array is kept in the outermost context and serves to store the
       # return path. Each recurring context may add something to the array along
       # the way. However, because of the nature of the algorithm, individual
-      # Context instances don't deliver "partial paths" as partial answers.
+      # Context instances don't deliver partial paths as partial answers.
 
       @path = Array.new
 
@@ -292,6 +303,16 @@ context :CalculateShortestPath do
     end
   end
 
+
+  def each
+    path.each { |node| yield node }
+  end
+
+
+  def path
+    @path
+  end
+
   private
 
   def pathTo
@@ -304,10 +325,6 @@ context :CalculateShortestPath do
 
   def south_neighbor;
     @south_neighbor
-  end
-
-  def path;
-    @path
   end
 
   def destination;
@@ -332,27 +349,6 @@ context :CalculateShortestPath do
     @south_neighbor = map.south_neighbor_of(origin_node)
   end
 
-
-  # public initialize. It's overloaded so that the public version doesn't
-  # have to pass a lot of crap; the initialize method takes care of
-  # setting up internal data structures on the first invocation. On
-  # recursion we override the defaults
-
-  def initialize(origin_node, target_node, geometries,
-      path_vector = nil, unvisited_hash = nil, pathto_hash = nil,
-      tentative_distance_values_hash = nil)
-    @destination = target_node
-
-    rebind(origin_node, geometries)
-
-    execute(path_vector, unvisited_hash, pathto_hash, tentative_distance_values_hash)
-  end
-
-  def each
-    path.each { |node| yield node }
-  end
-
-
   # This method does a simple traversal of the data structures (following pathTo)
   # to build the directed traversal vector for the minimum path
 
@@ -364,3 +360,5 @@ context :CalculateShortestPath do
     end while node != nil
   end
 end
+
+p c
