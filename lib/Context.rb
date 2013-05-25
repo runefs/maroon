@@ -117,8 +117,6 @@ class Context
     @default_interaction = default_interaction
   end
 
-  attr_reader :name
-  attr_reader :base_class
-  attr_reader :default_interaction
+  attr_reader :name, :base_class, :default_interaction
 
 end
