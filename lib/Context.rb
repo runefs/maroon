@@ -1,6 +1,7 @@
 class Context
   def self.define(*args, &block)
     name, base_class, default_interaction = *args
+
     if default_interaction and (not base_class.instance_of?(Class)) then
       base_class = eval(base_class.to_s)
     end
@@ -18,17 +19,7 @@ class Context
     @@generate_file_path = args[0]
   end
 
-  def roles()
-    @roles
-  end
-
-  def interactions()
-    @interactions
-  end
-
-  def private_interactions()
-    @private_interactions
-  end
+  attr_reader :roles, :interactions, :private_interactions
 
   private
   def get_definitions(b)
