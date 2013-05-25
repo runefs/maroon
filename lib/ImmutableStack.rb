@@ -8,7 +8,7 @@ class ImmutableStack
   end
 
   def self.empty()
-    @@empty ||= self.new(nil, nil)
+    @empty ||= self.new(nil, nil)
   end
 
   def each()

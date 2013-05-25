@@ -21,7 +21,7 @@ class Transformer
     else
       c = @base_class ? (Class.new(base_class)) : (Class.new)
       if with_contracts then
-        c.class_eval("def self.assert_that(obj)\n  ContextAsserter.new(self.contracts,obj)\nend\ndef self.refute_that(obj)\n  ContextAsserter.new(self.contracts,obj,false)\nend\ndef self.contracts\n  @@contracts\nend\ndef self.contracts=(value)\n  @@contracts = value\nend")
+        c.class_eval("def self.assert_that(obj)\n  ContextAsserter.new(self.contracts,obj)\nend\ndef self.refute_that(obj)\n  ContextAsserter.new(self.contracts,obj,false)\nend\ndef self.contracts\n  @contracts\nend\ndef self.contracts=(value)\n  @contracts = value\nend")
         c.contracts = contracts
       end
       Kernel.const_set(context_name, c)

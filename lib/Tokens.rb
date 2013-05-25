@@ -1,6 +1,11 @@
 class Tokens
   def self.define_token(name)
-    class_eval("@@#{name} = Tokens.new :#{name};def Tokens.#{name};@@#{name};end")
+    class_eval %{
+      @#{name} = Tokens.new :#{name};
+      def Tokens.#{name}
+        @#{name}
+      end
+    }
   end
 
   def to_s
