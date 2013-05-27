@@ -42,6 +42,7 @@ class Account
   def initialize (amount, id)
     @balance = amount
     @account_id = id
+    @log = []
   end
 
   def movement(amount)
@@ -50,7 +51,7 @@ class Account
   end
 
   def log(message)
-    (p s = "instance #{message}")
+      @log << message
   end
 
   def balance

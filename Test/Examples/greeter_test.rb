@@ -1,7 +1,6 @@
 #Thanks to Ted Milken for updating the original example
-require_relative '../base/maroon_base.rb'
-#require_relative '../base/maroon/kernel.rb'
-#require_relative '../base/maroon/contracts.rb'
+require 'test/unit'
+require_relative '../test_helper'
 
 class Person
   attr_accessor :name
@@ -19,7 +18,7 @@ Context.define :Greet_Someone do
   end
 
   def greet
-    %{#{greeter.name}: "#{greeter.welcome}, #{greeted.name}!"}
+    greeter.name.to_s + ': ' + greeter.welcome.to_s + ' ' + greeted.name.to_s + '!'
   end
 
   def initialize(greeter, greeted)
@@ -35,15 +34,11 @@ class MoneyTransferTest < Test::Unit::TestCase
     p1.greeting = 'Hello'
 
     p2 = Person.new
-    p2.name = 'World!'
+    p2.name = 'World'
     p2.greeting = 'Greetings'
 
-    #Execute is automagically created for the default interaction (specified by the second argument in context :Greet_Someone, :greet do)
-    #Executes construct a context object and calls the default interaction on this object
-    #Greet_Someone.assert_that(p1).can_play(:greeter)
-    #constructs a Greet_Someone context object and executes greet.
-    res = Greet_Someone.new(p2, p1).greet
-  assert_equal("",res)
+    res = Greet_Someone.new(p1, p2).greet
+    assert_equal("Bob: Hello World!",res)
   end
 
 end
