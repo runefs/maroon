@@ -45,16 +45,16 @@ c = context :Context do
     if base_class and ((not default_interaction) and (not base_class.instance_of?(Class))) then
       base_class, default_interaction = default_interaction, base_class
     end
-    @@with_contracts ||= nil
-    @@generate_file_path ||= nil
+    @with_contracts ||= nil
+    @generate_file_path ||= nil
     ctx = self.send(:create_context_factory,  name, base_class, default_interaction, block)
     transformer = Transformer.new name, ctx.roles,ctx.interactions,ctx.private_interactions,base_class, default_interaction
-    return transformer.transform @@generate_file_path, @@with_contracts
+    return transformer.transform @generate_file_path, @with_contracts
   end
 
   def self.generate_files_in(*args, &b)
 
-    @@generate_file_path = args[0]
+    @generate_file_path = args[0]
 
   end
 
@@ -116,12 +116,12 @@ c = context :Context do
   end
 
   def self.with_contracts(*args)
-    return @@with_contracts if (args.length == 0)
+    return @with_contracts if (args.length == 0)
     value = args[0]
-    if @@with_contracts and (not value) then
+    if @with_contracts and (not value) then
       raise('make up your mind! disabling contracts during execution will result in undefined behavior')
     end
-    @@with_contracts = value
+    @with_contracts = value
 
   end
 

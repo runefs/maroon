@@ -164,10 +164,10 @@ def self.refute_that(obj)
   ContextAsserter.new(self.contracts,obj,false)
 end
 def self.contracts
-  @@contracts
+  @contracts
 end
 def self.contracts=(value)
-  @@contracts = value
+  @contracts = value
 end')
         c.contracts = contracts
       end
