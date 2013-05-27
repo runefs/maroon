@@ -1,38 +1,36 @@
 
 require './lib/maroon/kernel'
 
-context :Meter, :current_total do
-  role :price_per_sec
+context :Meter do
+  def initialize(clock, start_pos)
+    @clock = clock
+    @route = Route.new({0 => {1 => 1.25}}, Road_types.new)
+    route.update_position start_pos
+    @price_per_sec = 0.05
+  end
+
+  role :price_per_sec do end
 
   role :route do
-    price do
+    def price
       route.calculate_price clock.start
     end
   end
 
   role :clock do
-    price do
+    def price
       self.duration * price_per_sec
     end
   end
 
-  current_total do |current_position|
+  def current_total(current_position)
     route.update_position current_position
     clock.price + route.price
   end
-  print_route do
+  def print_route
     route.each_point { |x, y|
       p "#{x},#{y}"
     }
-  end
-end
-
-class Meter
-  def initialize(start, start_pos)
-    @clock = Clock.new start
-    @route = Route.new({0 => {1 => 1.25}}, Road_types.new)
-    route.update_position start_pos
-    @price_per_sec = 0.05
   end
 end
 
@@ -52,7 +50,7 @@ context :Route do
   role :prices do
   end
   role :payable_position do
-    price_from do |prev|
+    def price_from(prev)
       return 0 unless prev
       delta = Math.sqrt((prev.x-self.x)**2 + (prev.y-self.y)**2 + (prev.z-self.z)**2)
       road_type = @road_types[self]
@@ -62,7 +60,7 @@ context :Route do
   end
 
   role :positions do
-    price_for_route do |price_table|
+    def price_for_route(price_table)
       prev = nil
       sum = 0
       positions.each do |pos|
@@ -73,16 +71,13 @@ context :Route do
       sum
     end
   end
-  update_position do |new_position|
+  def update_position(new_position)
     positions << new_position
   end
-  calculate_price do |start_time|
+  def calculate_price(start_time)
     price_table = prices[start_time.hour / (24/prices.length)]
     positions.price_for_route price_table
   end
-end
-
-class Route
   def initialize(prices, road_types)
     @positions = []
     @prices = prices
@@ -121,5 +116,21 @@ class Position
     @x = x
     @y = y
     @z = z
+  end
+end
+
+class MeterTest < Test::Unit::TestCase
+  class TestClock
+    def initialize(duration)
+      @duration = duration
+    end
+
+    attr_reader :duration
+  end
+
+  def test_run
+     meter = Meter.new(TestClock.new(100),Position.new(0,0,0))
+     price = meter.current_total Position.new(10,4,5)
+    assert_equal(0,price)
   end
 end

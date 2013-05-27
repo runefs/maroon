@@ -1,20 +1,6 @@
 require 'test/unit'
 require_relative '../test_helper'
 
-class MoneyTransferTest < Test::Unit::TestCase
-  def test_transfer
-    source = Account.new 1000, "source"
-    destination = Account.new 0, "destination"
-    ctx = MoneyTransfer.new source, destination, 100
-    ctx.transfer
-    assert_equal(900,source.balance)
-    assert_equal(100,destination.balance)
-    assert_equal(1,4)
-  end
-end
-
-
-
 Context.define :MoneyTransfer do
   def initialize(source, destination, amount)
     @source = source
@@ -73,5 +59,17 @@ class Account
 
   def to_s
     "balance of #{@account_id}: #{@balance}"
+  end
+end
+
+
+class MoneyTransferTest < Test::Unit::TestCase
+  def test_transfer
+    source = Account.new 1000, "source"
+    destination = Account.new 0, "destination"
+    ctx = MoneyTransfer.new source, destination, 100
+    ctx.transfer
+    assert_equal(900,source.balance)
+    assert_equal(100,destination.balance)
   end
 end
