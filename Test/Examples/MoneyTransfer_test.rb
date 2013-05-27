@@ -8,7 +8,7 @@ class MoneyTransferTest < Test::Unit::TestCase
     ctx = MoneyTransfer.new source, destination, 100
     ctx.transfer
     assert_equal(900,source.balance)
-    assert_equal(100,destination)
+    assert_equal(100,destination.balance)
     assert_equal(1,4)
   end
 end
@@ -29,7 +29,7 @@ Context.define :MoneyTransfer do
       source.log 'withdrawal ' + amount.to_s
     end
     def log(message)
-      @l0g << (@source.to_s + ' source ' + message)
+      @log << (@source.to_s + ' source ' + message)
     end
   end
 
@@ -65,6 +65,10 @@ class Account
 
   def log(message)
     (p s = "instance #{message}")
+  end
+
+  def balance
+    @balance
   end
 
   def to_s
