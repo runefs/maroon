@@ -27,7 +27,7 @@ context :ImmutableQueue do
   end
 
   def self.empty
-    @@empty ||= ImmutableQueue.new(ImmutableStack::empty, ImmutableStack::empty)
+    @empty ||= ImmutableQueue.new(ImmutableStack::empty, ImmutableStack::empty)
   end
 
   def push_array(arr)
