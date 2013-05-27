@@ -4,7 +4,7 @@ require_relative '../lib/maroon/kernel.rb'
 require_relative '../lib/build'
 
 require_relative 'assertions.rb'
-#require './Examples/meter.rb'
+#require './Examples/meter_test.rb'
 
 
 class BasicTests < MiniTest::Unit::TestCase
