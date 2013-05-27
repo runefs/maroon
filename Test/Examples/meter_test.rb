@@ -19,7 +19,7 @@ context :Meter do
 
   role :clock do
     def price
-      self.duration * price_per_sec
+      clock.duration * price_per_sec
     end
   end
 
@@ -29,7 +29,7 @@ context :Meter do
   end
   def print_route
     route.each_point { |x, y|
-      p "#{x},#{y}"
+      p x.to_s + ' ' + y.to_s
     }
   end
 end
@@ -52,8 +52,8 @@ context :Route do
   role :payable_position do
     def price_from(prev)
       return 0 unless prev
-      delta = Math.sqrt((prev.x-self.x)**2 + (prev.y-self.y)**2 + (prev.z-self.z)**2)
-      road_type = @road_types[self]
+      delta = Math.sqrt((prev.x-payable_position.x)**2 + (prev.y-payable_position.y)**2 + (prev.z-payable_position.z)**2)
+      road_type = @road_types[payable_position]
       price = prices[road_type]
       delta * price
     end
@@ -64,9 +64,9 @@ context :Route do
       prev = nil
       sum = 0
       positions.each do |pos|
-        bind pos => :payable_position, price_table => :prices
-        sum += pos.price_from prev
-        prev = pos
+        bind :pos => :payable_position, :price_table => :prices
+        sum += payable_position.price_from prev
+        prev = payable_position
       end
       sum
     end
@@ -123,14 +123,17 @@ class MeterTest < Test::Unit::TestCase
   class TestClock
     def initialize(duration)
       @duration = duration
-    end
 
+    end
+    def start
+      Time.now
+    end
     attr_reader :duration
   end
 
   def test_run
-     meter = Meter.new(TestClock.new(100),Position.new(0,0,0))
-     price = meter.current_total Position.new(10,4,5)
-    assert_equal(0,price)
+    meter = Meter.new(TestClock.new(100),Position.new(0,0,0))
+    price = meter.current_total Position.new(10,4,5)
+    assert_equal(19,price.to_i)
   end
 end
