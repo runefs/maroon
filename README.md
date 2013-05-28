@@ -34,7 +34,7 @@ end
 
 If you're using Bundler, run `bundle install` to setup your environment.
 
-Run `rake test` or just `rake` to make the tests run.
+Run `rake default` or just `rake` to make the tests run.
 
 
 ## Contributing
@@ -47,10 +47,19 @@ Run `rake test` or just `rake` to make the tests run.
 6. Push to the branch (`git push origin my-new-feature`)
 7. Create new Pull Request
 
+All changes should be done to the code in the base folder or the test folder.
+The code in the base folder is the implementation of maroon. When the default rake task is executed code will be generated
+in the 'generated' folder. The code in generated will be used when running the tests.
+If all tests pass
+1. Copy the generated files from 'generated' to 'lib'
+2. Rerun the the default rake task
+3. If all tests pass copy the generated file from 'generated' to 'lib'
+4. commit and create a pull request
+
+There's a rake task (build_lib) that will do the above if you are courageous enough to potentially loose your changes.
 
 Known bugs
-There are a few known bugs. The two major once are that #{...} syntax in strings can't beused. This is due to
-limitaion/bug in the current version of sourcify.
-If declaring several role methods for the same role sourcify might get confused and return the same sexp for
-multiple of them. The work around is to use do...end for the role ans {|| } for the role methods
+1. There are a few known bugs. The two major once are that double quotes can't be used. This is due to
+limitation/bug in the current version of sourcify.
+2. Using 'self' in a role method points to the context itself where it should be the role player
 
