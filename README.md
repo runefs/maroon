@@ -63,3 +63,14 @@ Known bugs
 limitation/bug in the current version of sourcify.
 2. Using 'self' in a role method points to the context itself where it should be the role player
 
+
+
+Short description of the flow
+The class named Context (defined in maroon_base.rb) will read and parse the block passed to the Context.define method
+When the parsing is complete each method will be represented by an AST (using S-expressions). The transformer context
+will take over from this point. In time it runs through the definition of all roles (including there methods) and interactions.
+For each method it will use the AstRewritter context to rewrite the methods (e.g. call the correct method on the context
+object when a role method is called). The AstRewritter is build on another context namely the AbstractSyntaxTree that is used to represent
+and semantics to the abstract syntax tree (S-expressions) that represents each method.
+When all methods have been rewritten the transformer will either write the corresponding class definition to file (if so specified)
+or create a class in memory.
