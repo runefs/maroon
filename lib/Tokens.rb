@@ -26,8 +26,9 @@ class Tokens
   define_token :indexer
   define_token :block
   define_token :block_with_bind
+  define_token :initializer
+  define_token :const
 end
-
 
 class DependencyGraphModel
 
@@ -47,7 +48,7 @@ class DependencyGraphModel
     res = ''
     dependencies = denormalize @dependencies
     dependencies.each{|d| res << d.reverse.join('->') << '
-    '}
+'}
     'digraph g{
     ' + res + '}'
   end
@@ -56,17 +57,17 @@ class DependencyGraphModel
   def print_dependencies(dependencies,indent)
     res = ''
     dependencies.each do |key,value|
-      res << key.to_s
-      if value.instance_of? Hash
-        res << '->' << (print_dependencies value,indent != nil ? indent+4 : nil)
-      elsif
-      res << ':' << value.to_s + '
-      '
-        indent.times {res << ' '} unless indent == nil
+        res << key.to_s
+        if value.instance_of? Hash
+          res << '->' << (print_dependencies value,indent != nil ? indent+4 : nil)
+        elsif
+          res << ':' << value.to_s + '
+          '
+          indent.times {res << ' '} unless indent == nil
+        end
+        res << '
+  '
       end
-      res << '
-      '
-    end
     res
   end
 
