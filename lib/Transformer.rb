@@ -49,9 +49,9 @@ class Transformer
 
   def self_roles_generated_source()
     impl = ""
-    getters = ""
+    getters = []
     roles.each do |role, methods|
-      (getters << (("attr_reader :" + role.to_s) + "\n         "))
+      getters <<  role.to_s
       methods.each do |name, method_sources|
         temp____defining_role = @defining_role
         @defining_role = role
@@ -66,7 +66,7 @@ class Transformer
         @defining_role = temp____defining_role
       end
     end
-    ((((impl.strip! or "") + "\n") + (getters.strip! or "")) + "\n")
+    (impl.strip! or "") + "\n" + (getters.length > 0 ? 'attr_reader :' + getters.join(', :') : '') + "\n"
   end
 
   def self_interactions_generated_source()

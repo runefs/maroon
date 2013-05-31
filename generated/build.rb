@@ -9,6 +9,4 @@ require_relative './interpretation_context'
 require_relative './AbstractSyntaxTree'
 require_relative './AstRewritter'
 require_relative './Transformer'
-
-
-
+require_relative './DependencyGraph'

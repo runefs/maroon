@@ -1,5 +1,3 @@
-require_relative '../../lib/maroon/kernel'
-
 # -*- encoding: utf-8 -*-
 #
 # Consider street corners on a Manhattan grid. We want to find the

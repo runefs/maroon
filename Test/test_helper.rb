@@ -2,7 +2,8 @@ require 'minitest/autorun'
 require 'sourcify'
 require_relative 'assertions'
 require_relative '../generated/build'
-require_relative '../lib/maroon/kernel'
+require_relative '../generated/maroon/kernel'
+
 #require 'debugger'
 
 def get_sexp &b

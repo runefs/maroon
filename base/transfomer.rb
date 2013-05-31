@@ -16,10 +16,9 @@ context :Transformer do
   role :roles do
      def generated_source
        impl = ''
-       getters = ''
+       getters = []
        roles.each do |role, methods|
-         getters << 'attr_reader :' + role.to_s + '
-         '
+         getters <<  role.to_s
          methods.each do |name, method_sources|
            bind :method_sources => :method , :name=> :method_name , :role => :defining_role
            definition = method.generated_source
@@ -27,7 +26,7 @@ context :Transformer do
          end
        end
        (impl.strip! || '')+ '
-' + (getters.strip!  || '') + '
+' + (getters.length > 0 ? 'attr_reader :' +getters.join(', :') : '') + '
 '
      end
   end

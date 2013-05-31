@@ -9,14 +9,43 @@ class Context
       base_class, default_interaction = default_interaction, base_class
     end
     @with_contracts ||= nil
-    @generate_file_path ||= nil
+
     ctx = self.send(:create_context_factory, name, base_class, default_interaction, block)
+    dependencies = nil
+    if self.generate_dependency_graph
+      dependencies = {}
+      DependencyGraph.new name,ctx.roles,ctx.interactions,dependencies
+      return dependencies unless self.generate_code
+    end
     transformer = Transformer.new(name, ctx.roles, ctx.interactions, ctx.private_interactions, base_class, default_interaction)
-    return transformer.transform(@generate_file_path, @with_contracts)
+    res = transformer.transform(generate_files_in, @with_contracts)
+    return res  unless self.generate_dependency_graph
+    [res,dependencies]
   end
 
-  def self.generate_files_in(*args, &b)
-    @generate_file_path = args[0]
+
+  def self.generate_files_in
+    @generate_files_in
+  end
+
+  def self.generate_files_in=(folder)
+    @generate_files_in = folder
+  end
+
+  def self.generate_code=(value)
+    @generate_code = value
+  end
+
+  def self.generate_dependency_graph=(value)
+    @generate_dependency_graph = value
+  end
+
+  def self.generate_code
+    @generate_code || !generate_dependency_graph || generate_files_in
+  end
+
+  def self.generate_dependency_graph
+    @generate_dependency_graph
   end
 
   attr_reader :roles, :interactions, :private_interactions

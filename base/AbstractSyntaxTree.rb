@@ -9,7 +9,7 @@ context :AbstractSyntaxTree do
 
       case
         when production.is_call? && (interpretation_context.roles.has_key?(production[2]))
-          @date = [production[2]]
+          @data = [production[2]]
           return true
         when (production == :self ||
             (production.is_indexer? && (production[1] == nil || production[1] == :self)) ||
@@ -54,14 +54,31 @@ context :AbstractSyntaxTree do
         end
       end
     end
-
+    def is_const?
+      if production.instance_of?(Sexp) && production.length == 2 && production[0] == :const && (production[1].instance_of? Symbol)
+        @data = [production[1]]
+        true
+      else
+        false
+      end
+    end
+    def is_initializer?
+      if production.is_call?
+        if AbstractSyntaxTree.new(production[1], @interpretation_context).type == Tokens::const
+           if production[2] == :new
+             return true
+           end
+        end
+      end
+      false
+    end
     def is_rolemethod_call?
       can_be = production.is_call?
       if can_be
         instance = AbstractSyntaxTree.new(production[1], @interpretation_context)
         can_be = instance.type == Tokens::role
         if can_be
-          instance_data = instance.data
+          instance_data = instance.data[0]
           role = @interpretation_context.roles[instance_data]
           data = production[2]
           can_be = role.has_key?(data)
@@ -93,6 +110,10 @@ context :AbstractSyntaxTree do
         Tokens::role
       when production.is_indexer?
         Tokens::indexer
+      when production.is_const?
+        Tokens::const
+      when production.is_initializer?
+        Tokens::initializer
       when production.is_call?
         Tokens::call
       else

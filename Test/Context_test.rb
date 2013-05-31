@@ -11,7 +11,7 @@ class ContextTest < Test::Unit::TestCase
     name = :MyContextRoleMethodCall
     role_name = :rol
 
-    c=Context.define name do
+    Context.define name do
       role role_name do
         def rolem(x, y)
           x+y
@@ -26,7 +26,7 @@ class ContextTest < Test::Unit::TestCase
     assert_equal(7, MyContextRoleMethodCall.new.add(3, 4))
   end
 
-  def xtest_simple
+  def test_simple
     name = :MyContextSimple
     role_name = :r
     Context.define name do
@@ -36,7 +36,7 @@ class ContextTest < Test::Unit::TestCase
     assert(Kernel::const_defined? name)
   end
 
-  def xtest_bind
+  def test_bind
     name = :MyContextBind
 
     c= Context.define name do
@@ -58,7 +58,7 @@ class ContextTest < Test::Unit::TestCase
     assert_equal(3, MyContextBind.new.inter)
   end
 
-  def xtest_role_method
+  def test_role_method
     name = :MyContext
     role_name = :rol
     Context.define name do
@@ -71,7 +71,7 @@ class ContextTest < Test::Unit::TestCase
     assert_equal(1, MyContext.new.send(:self_rol_rolem))
   end
 
-  def xtest_role_method_args
+  def test_role_method_args
     name = :MyContextArgs
     role_name = :rol
     Context.define name do
@@ -84,7 +84,7 @@ class ContextTest < Test::Unit::TestCase
     assert_equal(7, MyContextArgs.new.send(:self_rol_rolem, 3, 4))
   end
 
-  def xtest_role_method_splat
+  def test_role_method_splat
     name = :MyContextSplat
     role_name = :rol
     Context.define name do
@@ -97,7 +97,7 @@ class ContextTest < Test::Unit::TestCase
     assert_equal(7, MyContextSplat.new.send(:self_rol_rolem, 3, 4))
   end
 
-  def xtest_role_method_block
+  def test_role_method_block
     name = :MyContextBlock
     role_name = :rol
     c= Context.define name do
@@ -118,10 +118,10 @@ class ContextTest < Test::Unit::TestCase
         end
       end
     end
-    assert_equal(9, MyContextBlock.new.send(:self_rol_rolem, 3, 4) { |x, res| res + x })
+    assert_equal(13, MyContextBlock.new.send(:self_rol_rolem, 3, 4) { |x, res| res + x })
   end
 
-  def xtest_class_method_block
+  def test_class_method_block
     name = :MyContextClass
     role_name = :rol
     Context.define name do

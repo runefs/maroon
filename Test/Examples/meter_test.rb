@@ -1,5 +1,5 @@
-
-require './lib/maroon/kernel'
+require 'test/unit'
+require_relative '../test_helper'
 
 context :Meter do
   def initialize(clock, start_pos)

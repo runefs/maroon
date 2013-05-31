@@ -27,3 +27,59 @@ class Tokens
   define_token :block
   define_token :block_with_bind
 end
+
+
+class DependencyGraphModel
+
+  def initialize(dependencies)
+    @dependencies = dependencies
+  end
+
+  def to_hash
+    @dependecies
+  end
+
+  def to_s
+    print_dependencies @dependencies,0
+  end
+
+  def to_dot
+    res = ''
+    dependencies = denormalize @dependencies
+    dependencies.each{|d| res << d.reverse.join('->') << '
+    '}
+    'digraph g{
+    ' + res + '}'
+  end
+
+  private
+  def print_dependencies(dependencies,indent)
+    res = ''
+    dependencies.each do |key,value|
+      res << key.to_s
+      if value.instance_of? Hash
+        res << '->' << (print_dependencies value,indent != nil ? indent+4 : nil)
+      elsif
+      res << ':' << value.to_s + '
+      '
+        indent.times {res << ' '} unless indent == nil
+      end
+      res << '
+      '
+    end
+    res
+  end
+
+  def denormalize(dependencies)
+    res = []
+    dependencies.each do |key,value|
+      if value.instance_of? Hash
+        res = denormalize value
+        res.each{|a| a << key}
+      else
+        res << [key]
+      end
+    end
+    res
+  end
+end

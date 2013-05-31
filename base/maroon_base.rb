@@ -39,6 +39,7 @@ c = context :Context do
 
   def self.define(*args, &block)
     name, base_class, default_interaction = *args
+
     if default_interaction and (not base_class.instance_of?(Class)) then
       base_class = eval(base_class.to_s)
     end
@@ -46,16 +47,54 @@ c = context :Context do
       base_class, default_interaction = default_interaction, base_class
     end
     @with_contracts ||= nil
-    @generate_file_path ||= nil
-    ctx = self.send(:create_context_factory,  name, base_class, default_interaction, block)
-    transformer = Transformer.new name, ctx.roles,ctx.interactions,ctx.private_interactions,base_class, default_interaction
-    return transformer.transform @generate_file_path, @with_contracts
+
+    ctx = self.send(:create_context_factory, name, base_class, default_interaction, block)
+
+    if self.generate_dependency_graph
+      dependencies = {}
+      ctx.dependencies = DependencyGraphModel.new(DependencyGraph.new(name,ctx.roles,ctx.interactions,dependencies).create!)
+    end
+    transformer = Transformer.new(name, ctx.roles, ctx.interactions, ctx.private_interactions, base_class, default_interaction)
+    ctx.generated_class = transformer.transform(generate_files_in, @with_contracts)
+    ctx
   end
 
-  def self.generate_files_in(*args, &b)
+  def self.generate_files_in
+    @generate_files_in
+  end
 
-    @generate_file_path = args[0]
+  def self.generate_files_in=(folder)
+    @generate_files_in = folder
+  end
 
+  def self.generate_code=(value)
+    @generate_code = value
+  end
+
+  def self.generate_dependency_graph=(value)
+    @generate_dependency_graph = value
+  end
+
+  def self.generate_code
+    @generate_code || !generate_dependency_graph || generate_files_in
+  end
+
+  def self.generate_dependency_graph
+    @generate_dependency_graph
+  end
+
+  def dependencies
+    @dependencies
+  end
+  def generated_class
+    @generated_class
+  end
+
+  def dependencies=(value)
+    @dependencies=value
+  end
+  def generated_class=(value)
+    @generated_class=value
   end
 
   def roles
