@@ -1,95 +1,27 @@
-context :Transformer do
-
-  def initialize(context_name, roles, interactions,private_interactions, base_class,default_interaction)
+Context::generate_dependency_graph = {}
+ctx = context(:Transformer) {||
+  def initialize(context_name, definitions,private_interactions, base_class,default_interaction)
+    raise 'No method definitions to transform' if definitions.length == 0
     @context_name = context_name
-
-    @roles = roles
-    @interactions = interactions
+    @definitions = definitions
     @base_class = base_class
     @default_interaction = default_interaction
     @private_interactions = private_interactions
-    @definitions = {}
+
   end
 
   role :private_interactions do end
   role :context_name do end
-  role :roles do
-     def generated_source
-       impl = ''
-       getters = []
-       roles.each do |role, methods|
-         getters <<  role.to_s
-         methods.each do |name, method_sources|
-           bind :method_sources => :method , :name=> :method_name , :role => :defining_role
-           definition = method.generated_source
-           (impl << ('   ' + definition )) if definition
-         end
-       end
-       (impl.strip! || '')+ '
-' + (getters.length > 0 ? 'attr_reader :' +getters.join(', :') : '') + '
-'
-     end
-  end
-  role :interactions do
-    def generated_source
-      internal_methods = ''
-      external_methods = interactions.default
-      interactions.each do |name, interact|
-        interact.each do |m|
-          bind :m => :method, :name => :method_name
-          @defining_role = nil
-          code = method.generated_source
 
-          (method.is_private? ? internal_methods : external_methods) << ' ' << code
-        end
-      end
-      (external_methods.strip! || '') + '
-     private
-' + (internal_methods.strip! || '') + '
-'
-    end
-    def default
-       if @default
-         '
-               def self.call(*args)
-             arity = ' + name.to_s + '.method(:new).arity
-             newArgs = args[0..arity-1]
-             obj = ' + name.to_s + '.new *newArgs
-             if arity < args.length
-                 methodArgs = args[arity..-1]
-                 obj.' + default.to_s + ' *methodArgs
-             else
-                obj.' + default.to_s + '
-                             end
-         end
-            def call(*args);' + default.to_s + ' *args; end
-'
-       else
-         ''
-       end
-    end
-  end
-  role :method_name do end
-  role :defining_role do end
   role :method do
     def is_private?
       defining_role != nil || (private_interactions.has_key? method.name)
     end
+    def is_interaction?
+      (defining_role == nil) || (defining_role.name == nil)
+    end
     def definition
-      key = (@defining_role ? @defining_role.to_s : '') + method_name.to_s
-      return @definitions[key] if @definitions.has_key? key
-      unless method.instance_of? Sexp
-        unless (method.instance_of? Array)  && method.length < 2 then
-          raise(('Duplicate definition of ' + method_name.to_s + '(' + method.to_s + ')'))
-        end
-        unless (method.instance_of? Array)  && method.length > 0 then
-          raise(('No source for ' + method_name.to_s))
-        end
-      end
-
-      d = (method.instance_of? Array) ? method[0] : method
-      raise 'Sexp require' unless d.instance_of? Sexp
-      @definitions[key] = d
+      method
     end
     def body
       args = method.definition.detect { |d| d[0] == :args }
@@ -111,17 +43,17 @@ context :Transformer do
     def name
       name = if method.definition[1].instance_of? Symbol
                method.definition[1].to_s
-      else
-        (method.definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + method.definition[2].to_s)
-      end
+             else
+               (method.definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + method.definition[2].to_s)
+             end
       (
-      unless defining_role
+      if defining_role.name == nil  # it's an interaction
         name
       else
-        'self_' + @defining_role.to_s + '_' + name.to_s
+        'self_' + @defining_role.name.to_s + '_' + name.to_s
       end).to_sym
     end
-    def generated_source
+    def generate_source
       AstRewritter.new(method.body, interpretation_context).rewrite!
       body = Ruby2Ruby.new.process(method.body)
       raise 'Body is undefined' unless body
@@ -138,12 +70,46 @@ context :Transformer do
     end
   end
 
+  role(:definitions) {
+     def generate(context_class)
+       impl = ''
+       getters = []
+       definitions.each do |role_name, role|
+         line_no = (role.name != nil) ? role.line_no : nil
+         role.methods.each do |name, method_sources|
+           bind :method_sources => :method ,  role => :defining_role
+           definition = method.generate_source
+           (impl << ('   ' + definition )) if definition
+         end
+         if role && role.name
+           getters <<  role.to_s
+           if context_class != nil
+             context_class.class_eval('attr_reader :' + role.name.to_s, role.file_name, line_no)
+             line_no += 1
+           end
+         end
+         if context_class
+           begin
+             if line_no
+               context_class.class_eval(impl, role.file_name, line_no)
+             else
+               context_class.class_eval(impl)
+             end
+           rescue
+             raise impl
+           end
+         end
+       end
+       impl
+     end
+  }
+
+  role :defining_role do end
 
   def transform(file_path, with_contracts)
-
-    code = interactions.generated_source + roles.generated_source
-
-    if file_path then
+    c = file_path ? nil : (@base_class ? (Class.new(base_class)) : (Class.new))
+    code = definitions.generate c
+    if file_path
       name = context_name.to_s
       complete = ((((('class ' + name) + (@base_class ? (('<< ' + @base_class.name)) : (''))) + '
       ') + code.to_s) + '
@@ -153,7 +119,6 @@ context :Transformer do
       end
       complete
     else
-      c = @base_class ? (Class.new(base_class)) : (Class.new)
       if with_contracts then
         c.class_eval(
             'def self.assert_that(obj)
@@ -173,24 +138,25 @@ end')
       Kernel.const_set(context_name, c)
       begin
         temp = c.class_eval(code)
-      rescue SyntaxError
-        p 'error: ' + code
+      rescue
+        raise code.to_sym
       end
-
       (temp or c)
-    end
-
+      end
   end
+
 
   private
 
   def contracts
-    (@contracts ||= {})
+    @contracts
   end
   def role_aliases
-    (@role_aliases ||={})
+    @role_aliases
   end
   def interpretation_context
-    InterpretationContext.new(roles, contracts, role_aliases, defining_role, @private_interactions)
+    InterpretationContext.new(definitions, contracts, role_aliases, defining_role, @private_interactions)
   end
-end
+}
+
+p ctx.dependencies.to_dot

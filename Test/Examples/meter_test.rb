@@ -46,7 +46,7 @@ class Clock
   end
 end
 
-context :Route do
+context(:Route) {
   role :prices do
   end
   role :payable_position do
@@ -83,7 +83,7 @@ context :Route do
     @prices = prices
     @road_types = road_types
   end
-end
+}
 
 class Road_types
   def initialize

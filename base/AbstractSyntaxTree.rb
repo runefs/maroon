@@ -8,7 +8,7 @@ context :AbstractSyntaxTree do
     def is_role?
 
       case
-        when production.is_call? && (interpretation_context.roles.has_key?(production[2]))
+        when production.is_call? && (interpretation_context.methods.has_key?(production[2]))
           @data = [production[2]]
           return true
         when (production == :self ||
@@ -79,11 +79,10 @@ context :AbstractSyntaxTree do
         can_be = instance.type == Tokens::role
         if can_be
           instance_data = instance.data[0]
-          role = @interpretation_context.roles[instance_data]
+          role = @interpretation_context.methods[instance_data]
           data = production[2]
-          can_be = role.has_key?(data)
-          @data = [data, instance_data]
-
+          can_be = role.method_defined? data
+          @data = [data, instance_data] if can_be
         end
       end
       can_be

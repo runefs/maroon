@@ -41,46 +41,68 @@ class DependencyGraphModel
   end
 
   def to_s
-    print_dependencies @dependencies,0
+    print_dependencies @dependencies, 0
   end
 
   def to_dot
     res = ''
     dependencies = denormalize @dependencies
-    dependencies.each{|d| res << d.reverse.join('->') << '
-'}
+    dependencies.each { |d| res << d.reverse.join('->') << '
+    ' }
     'digraph g{
     ' + res + '}'
   end
 
   private
-  def print_dependencies(dependencies,indent)
+  def print_dependencies(dependencies, indent)
     res = ''
-    dependencies.each do |key,value|
-        res << key.to_s
-        if value.instance_of? Hash
-          res << '->' << (print_dependencies value,indent != nil ? indent+4 : nil)
-        elsif
-          res << ':' << value.to_s + '
-          '
-          indent.times {res << ' '} unless indent == nil
-        end
-        res << '
-  '
+    dependencies.each do |key, value|
+      res << key.to_s
+      if value.instance_of? Hash
+        res << '->' << (print_dependencies value, indent != nil ? indent+4 : nil)
+      elsif res << ':' << value.to_s + '
+      '
+        indent.times { res << ' ' } unless indent == nil
       end
+      res << '
+      '
+    end
     res
   end
 
   def denormalize(dependencies)
     res = []
-    dependencies.each do |key,value|
+    dependencies.each do |key, value|
       if value.instance_of? Hash
         res = denormalize value
-        res.each{|a| a << key}
+        res.each { |a| a << key }
       else
         res << [key]
       end
     end
     res
   end
+end
+
+
+class Role
+  def initialize(name, line_no, file_name)
+    @method = {}
+    @name = name
+    @line_no = line_no
+    @file_name = file_name
+  end
+
+  attr_reader :name, :methods, :line_no, :file_name
+end
+
+class Interaction
+  def initialize(line_no, file_name)
+    @method = {}
+    @name = nil
+    @line_no = line_no
+    @file_name = file_name
+  end
+
+  attr_reader :name, :methods, :line_no, :file_name
 end

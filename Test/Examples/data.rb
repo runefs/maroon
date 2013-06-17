@@ -234,4 +234,3 @@ class ManhattanGeometry2 < ManhattanGeometry
     @node_k
   end
 end
-

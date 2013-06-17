@@ -1,19 +1,17 @@
 context :DependencyGraph do
 
-  def initialize(context_name, roles, interactions, dependencies)
+  def initialize(context_name, methods, dependencies)
     @context_name = context_name
-
-    @roles = roles
-    @interactions = interactions
+    @methods = methods
     @dependencies = dependencies
   end
 
-  role :roles do
+  role :methods do
     def dependencies
-      roles.each do |r, methods|
+      methods.select{|k,v| v.methods != nil && v.methods.length  >0}.each do |r, role|
         bind :r => :role_name
         role_dependencies = (dependencies[r] ||= {})
-        methods.each do |name, method_sources|
+        role.methods.each do |name, method_sources|
           bind :method_sources => :method, :role_dependencies => :dependency
           method.get_dependencies
         end
@@ -21,17 +19,6 @@ context :DependencyGraph do
     end
   end
 
-  role :interactions do
-    def dependencies
-      interactions.each do |name, interact|
-        role_dependencies = ((dependencies[:interactions] ||= {})[name] ||= {})
-        interact.each do |m|
-          bind :m => :method, :role_dependencies => :dependency
-          method.get_dependencies
-        end
-      end
-    end
-  end
   role :dependencies do end
   role :dependency do
     def add(dependent_role_name,method_name)
@@ -60,7 +47,7 @@ context :DependencyGraph do
     end
 
     def ast
-      AbstractSyntaxTree.new(method.body, InterpretationContext.new(roles,{},{},role_name,{}))
+      AbstractSyntaxTree.new(method.body, InterpretationContext.new(methods,{},{},Role.new(role_name,__LINE__,__FILE__),{}))
     end
     def definition
       (method.instance_of? Array) ? method[0] : method
@@ -84,8 +71,7 @@ context :DependencyGraph do
   end
 
   def create!
-    roles.dependencies
-    interactions.dependencies
+    methods.dependencies
     dependencies
   end
 

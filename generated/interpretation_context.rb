@@ -1,31 +1,17 @@
 class InterpretationContext
-  def contracts
-    (@contracts ||= {})
-  end
 
-  def roles
-    (@roles ||= {})
-  end
+  attr_reader :contracts, :methods, :role_aliases, :defining_role, :private_interactions
 
-  def role_aliases
-    (@role_aliases ||= {})
-  end
-
-  def defining_role
-    @defining_role
-  end
-
-  def private_interactions
-    (@private_interactions ||= {})
-  end
-
-  def initialize(roles, contracts, role_aliases, defining_role, private_interactions)
+  def initialize(methods, contracts, role_aliases, defining_role, private_interactions)
     raise "Aliases must be a hash" unless role_aliases.instance_of? Hash or role_aliases == nil
-    raise "Roles must be a hash" unless roles.instance_of? Hash or roles == nil
+    raise "Roles must be a hash" unless methods.instance_of? Hash or methods == nil
     raise "Contracts must be a hash" unless contracts.instance_of? Hash or contracts == nil
 
-    @roles = roles
-    raise "Defining role is undefined" if defining_role && (!self.roles.has_key? defining_role)
+    @methods = methods
+    if defining_role && defining_role.name && (!self.methods.has_key? defining_role.name)
+      raise "Defining role '" + (defining_role.name.to_s || '') + "' is not defined in: " + self.methods.to_s
+    end
+
     @contracts = contracts
     @role_aliases = role_aliases
     @defining_role = defining_role
