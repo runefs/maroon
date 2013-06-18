@@ -36,4 +36,12 @@ class AbstractSyntaxTreeTest < Test::Unit::TestCase
     type = get_type_of_production  { foo[0] }
     assert_equal(Tokens::indexer, type)
   end
+
+  def test_block_with_bind
+    type = get_type_of_production  { [].each{|role|
+      bind :role => :foo
+    } }
+    assert_equal(Tokens::block_with_bind, type)
+  end
+
 end

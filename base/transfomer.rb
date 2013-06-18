@@ -74,7 +74,7 @@ ctx = context(:Transformer) {||
      def generate(context_class)
        impl = ''
        getters = []
-       definitions.each do |role_name, role|
+       @definitions.each do |role_name, role|
          line_no = (role.name != nil) ? role.line_no : nil
          role.methods.each do |name, method_sources|
            bind :method_sources => :method ,  role => :defining_role
@@ -82,10 +82,11 @@ ctx = context(:Transformer) {||
            (impl << ('   ' + definition )) if definition
          end
          if role && role.name
-           getters <<  role.to_s
            if context_class != nil
              context_class.class_eval('attr_reader :' + role.name.to_s, role.file_name, line_no)
              line_no += 1
+           else
+             getters << role.name
            end
          end
          if context_class
@@ -99,6 +100,10 @@ ctx = context(:Transformer) {||
              raise impl
            end
          end
+       end
+       unless context_class
+         (impl << '
+           attr_reader :' + getters.join(', :')) if getters.length > 0
        end
        impl
      end
