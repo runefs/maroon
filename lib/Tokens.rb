@@ -84,24 +84,17 @@ class DependencyGraphModel
   end
 end
 
-
 class Role
   def initialize(name, line_no, file_name)
-    @method = {}
+    raise "Roles must indicate a location" if name && ((line_no == nil) || file_name == nil)
+    @methods = {}
     @name = name
     @line_no = line_no
     @file_name = file_name
   end
 
-  attr_reader :name, :methods, :line_no, :file_name
-end
-
-class Interaction
-  def initialize(line_no, file_name)
-    @method = {}
-    @name = nil
-    @line_no = line_no
-    @file_name = file_name
+  def method_defined? name
+    @methods.has_key? name
   end
 
   attr_reader :name, :methods, :line_no, :file_name

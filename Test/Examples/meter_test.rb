@@ -29,7 +29,7 @@ context :Meter do
   end
   def print_route
     route.each_point { |x, y|
-      p x.to_s + ' ' + y.to_s
+      p x.to_s + ' '  + y.to_s
     }
   end
 end

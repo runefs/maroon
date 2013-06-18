@@ -22,6 +22,7 @@ context :DependencyGraph do
   role :dependencies do end
   role :dependency do
     def add(dependent_role_name,method_name)
+
       if dependent_role_name && dependent_role_name != role_name
         dependency[dependent_role_name] ||= {}
 
@@ -60,6 +61,7 @@ context :DependencyGraph do
           when Tokens.rolemethod_call
             data = production.data
             name = data[1]
+            name = name.name if name.instance_of? Role
             method_name = data[0]
           when Tokens.role
             name = production.data[0]

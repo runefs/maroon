@@ -108,9 +108,20 @@ c = context :Context do
 
 
   private
-
+  def get_sexp(b)
+    begin
+      b.to_sexp
+    rescue NoMethodError => e
+      if e.message == 'undefined method `[]\' for nil:NilClass'
+        raise 'It would seem you used a double quote somewhere which is unfortunately not supported'
+      else
+        raise e
+      end
+    end
+  end
   def get_definitions(b)
-    sexp = b.to_sexp
+    sexp = get_sexp b
+
     unless is_definition? sexp[3]
       sexp = sexp[3]
       if sexp
@@ -130,7 +141,7 @@ c = context :Context do
 
     ctx = Context.new name, base_class, default_interaction
     ctx.instance_eval {
-      sexp = block.to_sexp
+      sexp = get_sexp block
       temp_block = sexp[3]
       i = 0
       raise 'Could not parse \'' + name + '\' try using \'{|| }\' for the context block and \'do\'...\'end\' for the roles'  unless temp_block
