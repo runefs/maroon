@@ -1,14 +1,12 @@
 class DependencyGraph
-      def initialize(context_name,methods,dependencies) @context_name = context_name
+         def initialize(context_name,methods,dependencies) @context_name = context_name
 @methods = methods
 @dependencies = dependencies
  end
- def create!() self_methods_dependencies
+   def create!() self_methods_dependencies
 dependencies
  end
-     private
-
-def self_methods_dependencies() methods.select { |k, v| v.methods.!=(nil) and (v.methods.length > 0) }.each do |r, role|
+   def self_methods_dependencies() methods.select { |k, v| v.methods.!=(nil) and (v.methods.length > 0) }.each do |r, role|
   temp____role_name = @role_name
   @role_name = r
   role_dependencies = dependencies[r] ||= {}
@@ -40,7 +38,7 @@ else
   self_method_definition[index]
 end
  end
-   def self_method_ast() AbstractSyntaxTree.new(self_method_body, InterpretationContext.new(methods, {}, {}, Role.new(role_name, 50, "C:/Users/Rune/Documents/GitHub/Moby/base/dependency_graph.rb"), {})) end
+   def self_method_ast() AbstractSyntaxTree.new(self_method_body, InterpretationContext.new(methods, {}, {}, Role.new(role_name, 51, "C:/Users/Rune/Documents/GitHub/Moby/base/dependency_graph.rb"), {})) end
    def self_method_definition() method.instance_of?(Array) ? (method[0]) : (method) end
    def self_method_get_dependencies() self_method_ast.each_production do |production|
   name = nil
@@ -49,6 +47,7 @@ end
   when Tokens.rolemethod_call then
     data = production.data
     name = data[1]
+    name = name.name if name.instance_of?(Role)
     method_name = data[0]
   when Tokens.role then
     name = production.data[0]
@@ -57,6 +56,6 @@ end
   end
   self_dependency_add(name, method_name) if name.!=(nil)
 end end
-attr_reader :methods, :dependencies, :dependency, :role_name, :method
 
+           attr_reader :methods, :dependencies, :dependency, :role_name, :method
            end

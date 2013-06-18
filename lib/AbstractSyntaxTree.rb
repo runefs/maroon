@@ -1,6 +1,6 @@
 class AbstractSyntaxTree
-      def initialize(ast,interpretation_context) rebind(ImmutableQueue.empty.push(ast), interpretation_context) end
- def type() case
+         def initialize(ast,interpretation_context) rebind(ImmutableQueue.empty.push(ast), interpretation_context) end
+   def type() case
 when (nil == production) then
   nil
 when self_production_is_block_with_bind? then
@@ -24,12 +24,12 @@ when self_production_is_call? then
 else
   Tokens.other
 end end
- def [](i) @production[i] end
- def []=(i,v) @production[i] = v end
- def length() @production.length end
- def last() @production.last end
- def first() @production.first end
- def data() return @data if @data
+   def [](i) @production[i] end
+   def []=(i,v) @production[i] = v end
+   def length() @production.length end
+   def last() @production.last end
+   def first() @production.first end
+   def data() return @data if @data
 @data = case
 when self_production_is_call? then
   @production[2]
@@ -37,7 +37,7 @@ else
   @production
 end
  end
- def each_production() yield(self)
+   def each_production() yield(self)
 if production.instance_of?((Sexp or production.instance_of?(Array))) then
   @queue = @queue.push_array(production)
 end
@@ -49,12 +49,11 @@ while @queue.!=(ImmutableQueue.empty) do
   end
 end
  end
-     private
-def rebind(queue,ctx) @data = nil
+   def rebind(queue,ctx) @data = nil
 @production, @queue = queue.pop
 @interpretation_context = ctx
  end
-def self_production_is_role?() case
+   def self_production_is_role?() case
 when (self_production_is_call? and interpretation_context.methods.has_key?(production[2])) then
   @data = [interpretation_context.methods[production[2]]]
   true
@@ -117,6 +116,6 @@ if can_be then
 end
 can_be
  end
-attr_reader :interpretation_context, :queue, :production
 
+           attr_reader :interpretation_context, :queue, :production
            end

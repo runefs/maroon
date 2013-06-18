@@ -1,8 +1,8 @@
 class AstRewritter
-      def initialize(ast,interpretation_context) @ast = AbstractSyntaxTree.new(ast, interpretation_context)
+         def initialize(ast,interpretation_context) @ast = AbstractSyntaxTree.new(ast, interpretation_context)
 @roles = interpretation_context.methods
  end
- def rewrite!() ast.each_production do |production|
+   def rewrite!() ast.each_production do |production|
   case production.type
   when Tokens.rolemethod_call then
     data = production.data
@@ -52,9 +52,6 @@ class AstRewritter
     # do nothing
   end
 end end
-     private
 
-
-attr_reader :ast
-
+           attr_reader :ast
            end

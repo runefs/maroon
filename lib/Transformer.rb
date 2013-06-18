@@ -1,12 +1,12 @@
 class Transformer
-      def initialize(context_name,definitions,private_interactions,base_class,default_interaction) raise("No method definitions to transform") if (definitions.length == 0)
+         def initialize(context_name,definitions,private_interactions,base_class,default_interaction) raise("No method definitions to transform") if (definitions.length == 0)
 @context_name = context_name
 @definitions = definitions
 @base_class = base_class
 @default_interaction = default_interaction
 @private_interactions = private_interactions
  end
- def transform(file_path,with_contracts) c = file_path ? (nil) : (@base_class ? (Class.new(base_class)) : (Class.new))
+   def transform(file_path,with_contracts) c = file_path ? (nil) : (@base_class ? (Class.new(base_class)) : (Class.new))
 code = self_definitions_generate(c)
 if file_path then
   name = context_name.to_s
@@ -25,11 +25,10 @@ else
   (temp or c)
 end
  end
-     private
-def contracts() @contracts end
- def role_aliases() @role_aliases end
- def interpretation_context() InterpretationContext.new(definitions, contracts, role_aliases, defining_role, @private_interactions) end
-def self_method_is_private?() (defining_role.!=(nil) or private_interactions.has_key?(self_method_name)) end
+   def contracts() @contracts end
+   def role_aliases() @role_aliases end
+   def interpretation_context() InterpretationContext.new(definitions, contracts, role_aliases, defining_role, @private_interactions) end
+   def self_method_is_private?() (defining_role.!=(nil) or private_interactions.has_key?(self_method_name)) end
    def self_method_is_interaction?() ((defining_role == nil) or (defining_role.name == nil)) end
    def self_method_definition() method end
    def self_method_body() args = self_method_definition.detect { |d| (d[0] == :args) }
@@ -107,6 +106,6 @@ unless context_class then
 end
 impl
  end
-attr_reader :private_interactions, :context_name, :method, :definitions, :defining_role
 
+           attr_reader :private_interactions, :context_name, :method, :definitions, :defining_role
            end

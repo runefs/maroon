@@ -1,5 +1,5 @@
 class Context
-      def self.define(*args,&block) name, base_class, default_interaction = *args
+         def self.define(*args,&block) name, base_class, default_interaction = *args
 if default_interaction and (not base_class.instance_of?(Class)) then
   base_class = eval(base_class.to_s)
 end
@@ -16,20 +16,28 @@ transformer = Transformer.new(name, ctx.methods, ctx.private_interactions, base_
 ctx.generated_class = transformer.transform(generate_files_in, @with_contracts)
 ctx
  end
- def self.generate_files_in() @generate_files_in end
- def self.generate_files_in=(folder) @generate_files_in = folder end
- def self.generate_code=(value) @generate_code = value end
- def self.generate_dependency_graph=(value) @generate_dependency_graph = value end
- def self.generate_code() (@generate_code or ((not generate_dependency_graph) or generate_files_in)) end
- def self.generate_dependency_graph() @generate_dependency_graph end
- def dependencies() @dependencies end
- def generated_class() @generated_class end
- def dependencies=(value) @dependencies = value end
- def generated_class=(value) @generated_class = value end
- def methods() @methods ||= {} end
- def private_interactions() @private_interactions end
-     private
-def get_definitions(b) sexp = b.to_sexp
+   def self.generate_files_in() @generate_files_in end
+   def self.generate_files_in=(folder) @generate_files_in = folder end
+   def self.generate_code=(value) @generate_code = value end
+   def self.generate_dependency_graph=(value) @generate_dependency_graph = value end
+   def self.generate_code() (@generate_code or ((not generate_dependency_graph) or generate_files_in)) end
+   def self.generate_dependency_graph() @generate_dependency_graph end
+   def dependencies() @dependencies end
+   def generated_class() @generated_class end
+   def dependencies=(value) @dependencies = value end
+   def generated_class=(value) @generated_class = value end
+   def methods() @methods ||= {} end
+   def private_interactions() @private_interactions end
+   def get_sexp(b) begin
+  b.to_sexp
+rescue NoMethodError => e
+  if (e.message == "undefined method `[]' for nil:NilClass") then
+    raise("It would seem you used a double quote somewhere which is unfortunately not supported")
+  else
+    raise(e)
+  end
+end end
+   def get_definitions(b) sexp = get_sexp(b)
 unless is_definition?(sexp[3]) then
   sexp = sexp[3]
   sexp = sexp.select { |exp| is_definition?(exp) } if sexp
@@ -37,13 +45,9 @@ unless is_definition?(sexp[3]) then
 end
 sexp.select { |exp| is_definition?(exp) }
  end
- def self.create_context_factory(name,base_class,default_interaction,block) ctx = Context.new(name, base_class, default_interaction)
+   def self.create_context_factory(name,base_class,default_interaction,block) ctx = Context.new(name, base_class, default_interaction)
 ctx.instance_eval do
-  begin
-     sexp = block.to_sexp
-  rescue Exception => e
-    raise e
-  end
+  sexp = get_sexp(block)
   temp_block = sexp[3]
   i = 0
   unless temp_block then
@@ -68,15 +72,15 @@ ctx.instance_eval do
 end
 ctx
  end
- def self.with_contracts(*args) return @with_contracts if (args.length == 0)
+   def self.with_contracts(*args) return @with_contracts if (args.length == 0)
 value = args[0]
 if @with_contracts and (not value) then
   raise("make up your mind! disabling contracts during execution will result in undefined behavior")
 end
 @with_contracts = value
  end
- def is_definition?(exp) exp and ((exp[0] == :defn) or (exp[0] == :defs)) end
- def role(role_name,&b) line_no = 171
+   def is_definition?(exp) exp and ((exp[0] == :defn) or (exp[0] == :defs)) end
+   def role(role_name,&b) line_no = 182
 file_name = "C:/Users/Rune/Documents/GitHub/Moby/base/maroon_base.rb"
 @defining_role = Role.new(role_name, line_no, file_name)
 methods[role_name] ||= @defining_role
@@ -85,7 +89,7 @@ if block_given? then
   definitions.each { |exp| add_method(exp, nil, nil) }
 end
  end
- def add_method(definition,line_no,file_name) name = if definition[1].instance_of?(Symbol) then
+   def add_method(definition,line_no,file_name) name = if definition[1].instance_of?(Symbol) then
   definition[1]
 else
   ((definition[1].select { |e| e.instance_of?(Symbol) }.map { |e| e.to_s }.join(".") + ".") + definition[2].to_s).to_sym
@@ -101,8 +105,8 @@ end
 @methods[key].methods[name] = definition
 @private_interactions[name] = true if (@defining_role == nil) and @private
  end
- def private() @private = true end
- def initialize(name,base_class,default_interaction) @methods = {}
+   def private() @private = true end
+   def initialize(name,base_class,default_interaction) @methods = {}
 @private_interactions = {}
 @role_alias = {}
 @name = name
@@ -110,6 +114,5 @@ end
 @default_interaction = default_interaction
  end
 
-
-
+           attr_reader :name, :base_class, :default_interaction
            end
