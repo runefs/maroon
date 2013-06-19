@@ -86,8 +86,9 @@ rescue NoMethodError => e
  end
 ') : ''
       header = 'def ' + method.name.to_s + args
-      method_source = header + 'begin
-' + body + backtrace_rescue + '
+      prefix = with_backtrace ? ' begin
+' : ' '
+      method_source = header + prefix + body + backtrace_rescue + '
  end
 '
       @lines += method_source.lines.count -(backtrace_rescue.lines.count + 1)
