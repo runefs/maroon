@@ -74,7 +74,7 @@ rescue NoMethodError => e
     backtrace = e.backtrace
     last = backtrace[0]
     parts = last.split(":")
-    num = parts[1].to_i
+    num = parts[1].to_
     num = parts[2].to_i if num == 0
     last[":#{num}:"] = ":#{num +' + @lines.to_s + '}:"
     backtrace[0] = last
@@ -108,11 +108,12 @@ rescue NoMethodError => e
 
            definition = method.generate_source(context_class && true)
            if context_class
-             #begin
+             begin
                context_class.class_eval(definition,role.file_name)
-             #rescue
-               #raise definition
-             #end
+             rescue SyntaxError => e
+               raise (e.message + '
+' + definition)
+             end
            end
            (impl << ('   ' + definition )) if definition
          end

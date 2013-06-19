@@ -22,7 +22,6 @@ class ContextTest < Test::Unit::TestCase
       end
       def add(x,y)
         rolx.rolem x,y
-        MyContextRoleMethodCall.new.foo
       end
     end
 
