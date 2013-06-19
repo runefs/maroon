@@ -7,7 +7,6 @@ ctx = context(:Transformer) {||
     @base_class = base_class
     @default_interaction = default_interaction
     @private_interactions = private_interactions
-
   end
 
   role :private_interactions do end
@@ -22,6 +21,12 @@ ctx = context(:Transformer) {||
     end
     def definition
       method
+    end
+    def line_no
+      @lines
+    end
+    def file_name
+      @defining_role.file_name || ''
     end
     def body
       args = method.definition.detect { |d| d[0] == :args }
@@ -53,7 +58,7 @@ ctx = context(:Transformer) {||
         'self_' + @defining_role.name.to_s + '_' + name.to_s
       end).to_sym
     end
-    def generate_source
+    def generate_source(with_backtrace)
       AstRewritter.new(method.body, interpretation_context).rewrite!
       body = Ruby2Ruby.new.process(method.body)
       raise 'Body is undefined' unless body
@@ -63,10 +68,30 @@ ctx = context(:Transformer) {||
       else
         args= ''
       end
-
+      backtrace_rescue = with_backtrace ? ('
+rescue NoMethodError => e
+  begin
+    backtrace = e.backtrace
+    last = backtrace[0]
+    parts = last.split(":")
+    num = parts[1].to_i
+    num = parts[2].to_i if num == 0
+    last[":#{num}:"] = ":#{num +' + @lines.to_s + '}:"
+    backtrace[0] = last
+    e.set_backtrace backtrace
+    raise e
+  rescue
+    raise e
+  end
+ end
+') : ''
       header = 'def ' + method.name.to_s + args
-      header + ' ' + body + ' end
+      method_source = header + 'begin
+' + body + backtrace_rescue + '
+ end
 '
+      @lines += method_source.lines.count -(backtrace_rescue.lines.count + 1)
+      method_source
     end
   end
 
@@ -74,32 +99,31 @@ ctx = context(:Transformer) {||
      def generate(context_class)
        impl = ''
        getters = []
+
        @definitions.each do |role_name, role|
          line_no = (role.name != nil) ? role.line_no : nil
+         @lines = line_no || 0
          role.methods.each do |name, method_sources|
            bind :method_sources => :method ,  role => :defining_role
-           definition = method.generate_source
+
+           definition = method.generate_source(context_class && true)
+           if context_class
+             #begin
+               context_class.class_eval(definition,role.file_name)
+             #rescue
+               #raise definition
+             #end
+           end
            (impl << ('   ' + definition )) if definition
          end
          if role && role.name
            if context_class != nil
-             context_class.class_eval('attr_reader :' + role.name.to_s, role.file_name, line_no)
-             line_no += 1
+             context_class.class_eval('attr_reader :' + role.name.to_s)
            else
              getters << role.name
            end
          end
-         if context_class
-           begin
-             if line_no
-               context_class.class_eval(impl, role.file_name, line_no)
-             else
-               context_class.class_eval(impl)
-             end
-           rescue
-             raise impl
-           end
-         end
+
        end
        unless context_class
          (impl << '
@@ -141,12 +165,7 @@ end')
         c.contracts = contracts
       end
       Kernel.const_set(context_name, c)
-      begin
-        temp = c.class_eval(code)
-      rescue
-        raise code.to_sym
-      end
-      (temp or c)
+      c
       end
   end
 

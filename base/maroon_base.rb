@@ -141,6 +141,7 @@ c = context :Context do
 
     ctx = Context.new name, base_class, default_interaction
     ctx.instance_eval {
+      file,_ = block.source_location
       sexp = get_sexp block
       temp_block = sexp[3]
       i = 0
@@ -149,7 +150,7 @@ c = context :Context do
         exp = temp_block[i]
         unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
           if exp[0] == :defn || exp[0] == :defs
-            add_method(exp,nil,nil)
+            add_method(exp,nil,file)
             temp_block.delete_at i
             i -= 1
           elsif exp[0] == :call && exp[1] == nil && exp[2] == :private
@@ -179,13 +180,13 @@ c = context :Context do
   end
 
   def role(role_name, &b)
-    line_no = __LINE__
-    file_name = __FILE__
+    file_name,line_no = b.source_location
     @defining_role = Role.new(role_name, line_no, file_name)
     methods[role_name] ||= @defining_role
     if block_given? then
       definitions = get_definitions(b)
-      definitions.each { |exp| add_method(exp, nil, nil) }
+      file,line = b.source_location
+      definitions.each { |exp| add_method(exp,nil , file) }
     end
   end
 

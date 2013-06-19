@@ -9,20 +9,24 @@ class ContextTest < Test::Unit::TestCase
 
   def test_role_method_call
     name = :MyContextRoleMethodCall
-    role_name = :rol
+    role_name = :rolx
 
     c = Context.define name do
+      def padding
+        0
+      end
       role role_name do
         def rolem(x, y)
           x+y
         end
       end
       def add(x,y)
-        rol.rolem x,y
+        rolx.rolem x,y
+        MyContextRoleMethodCall.new.foo
       end
     end
 
-    assert_equal(7, MyContextRoleMethodCall.new.send(:self_rol_rolem, 3, 4))
+    assert_equal(7, MyContextRoleMethodCall.new.send(:self_rolx_rolem, 3, 4))
     assert_equal(7, MyContextRoleMethodCall.new.add(3, 4))
   end
 

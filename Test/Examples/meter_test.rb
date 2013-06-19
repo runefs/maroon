@@ -136,4 +136,20 @@ class MeterTest < Test::Unit::TestCase
     price = meter.current_total Position.new(10,4,5)
     assert_equal(19,price.to_i)
   end
+
+  def inter()
+    begin @sum = 0
+    [1, 2].each do |p|   temp____role_name = @role_name
+    @role_name = p
+    self_role_name_sum
+    @role_name = temp____role_name end
+    @sum
+    rescue NoMethodError => e
+      backtrace = e.backtrace
+      last = backtrace[0]
+      last["(eval)"] = ''
+      backtrace[0] = last
+      e.set_backtrace = backtrace
+    end
+  end
 end
