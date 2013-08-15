@@ -6,16 +6,16 @@ context :AbstractSyntaxTree do
 
   role :production do
     def is_role?
-
       case
-        when production.is_call? && (interpretation_context.roles.has_key?(production[2]))
-          @data = [production[2]]
-          return true
+        when (production.is_call? && (interpretation_context.methods.has_key?(production[2])))
+          @data = [interpretation_context.methods[production[2]]]
+          true
         when (production == :self ||
-            (production.is_indexer? && (production[1] == nil || production[1] == :self)) ||
-            (production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) && production[0] == :self))) && @interpretation_context.defining_role
-          @data = @interpretation_context.defining_role
-          return true
+             (production.is_indexer? && (production[1] == nil || production[1] == :self)) ||
+             (production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) && production[0] == :self))) && @interpretation_context.defining_role
+
+          @data = [@interpretation_context.defining_role]
+          true
         else
           false
       end
@@ -26,7 +26,9 @@ context :AbstractSyntaxTree do
     end
 
     def is_call?
-      production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) && production[0] == :call)
+      can_be = production && ((production.instance_of?(Sexp) || production.instance_of?(Array)) && (production[0] == :call))
+      @data = [production[2]] if can_be
+      can_be
     end
 
     def is_block?
@@ -36,9 +38,9 @@ context :AbstractSyntaxTree do
     def is_block_with_bind?
       if production.is_block?
         body = @production.last()
-        if body && (exp = body[1])
-          bind = AbstractSyntaxTree.new exp, @interpretation_context
-          if bind.type == Tokens::call && bind.data == :bind
+        if body and exp = (body[1] || body)
+          bind = AbstractSyntaxTree.new(exp, @interpretation_context)
+          if (bind.type == Tokens.call) and (bind.data == [:bind])
             aliases = {}
             list = exp.last[1..-1]
             (list.length/2).times{|i|
@@ -78,12 +80,10 @@ context :AbstractSyntaxTree do
         instance = AbstractSyntaxTree.new(production[1], @interpretation_context)
         can_be = instance.type == Tokens::role
         if can_be
-          instance_data = instance.data[0]
-          role = @interpretation_context.roles[instance_data]
-          data = production[2]
-          can_be = role.has_key?(data)
-          @data = [data, instance_data]
-
+          role = instance.data[0]
+          method_name = production[2]
+          can_be = role && role.method_defined?(method_name)
+          @data = [method_name, role.name] if can_be
         end
       end
       can_be

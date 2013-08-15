@@ -7,7 +7,8 @@ class AbstractSyntaxTreeTest < Test::Unit::TestCase
 
   def get_type_of_production(&b)
     contracts ={}
-    roles = {:foo => {:bar => []}}
+    roles = {:foo => Role.new(:foo,__LINE__,__FILE__) }
+    roles[:foo].methods[:bar] = {}
     interpretation_context = InterpretationContext.new(roles, contracts, nil,nil,nil)
 
     exp = get_sexp &b
@@ -35,4 +36,12 @@ class AbstractSyntaxTreeTest < Test::Unit::TestCase
     type = get_type_of_production  { foo[0] }
     assert_equal(Tokens::indexer, type)
   end
+
+  def test_block_with_bind
+    type = get_type_of_production  { [].each{|role|
+      bind :role => :foo
+    } }
+    assert_equal(Tokens::block_with_bind, type)
+  end
+
 end

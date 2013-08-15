@@ -4,7 +4,7 @@ context :AstRewritter do
 
   def initialize (ast, interpretation_context)
     @ast = AbstractSyntaxTree.new ast, interpretation_context
-    @roles = interpretation_context.roles
+    @roles = interpretation_context.methods
   end
 
   def rewrite!
@@ -25,8 +25,8 @@ context :AstRewritter do
             raise local_must_b_sym unless local.instance_of? Symbol
             unless @roles.has_key? aliased_role
               role_names = []
-              @interpretation_context.each do |k,v|
-                role_names << k.to_s
+              @roles.each do |k,v|
+                role_names << k.to_s if k != nil
               end
               raise aliased_role.to_s + ' is not a role. Available roles are ' + role_names.join(',')
             end

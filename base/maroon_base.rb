@@ -52,9 +52,9 @@ c = context :Context do
 
     if self.generate_dependency_graph
       dependencies = {}
-      ctx.dependencies = DependencyGraphModel.new(DependencyGraph.new(name,ctx.roles,ctx.interactions,dependencies).create!)
+      ctx.dependencies = DependencyGraphModel.new(DependencyGraph.new(name,ctx.methods,dependencies).create!)
     end
-    transformer = Transformer.new(name, ctx.roles, ctx.interactions, ctx.private_interactions, base_class, default_interaction)
+    transformer = Transformer.new(name, ctx.methods, ctx.private_interactions, base_class, default_interaction)
     ctx.generated_class = transformer.transform(generate_files_in, @with_contracts)
     ctx
   end
@@ -86,6 +86,7 @@ c = context :Context do
   def dependencies
     @dependencies
   end
+
   def generated_class
     @generated_class
   end
@@ -97,21 +98,30 @@ c = context :Context do
     @generated_class=value
   end
 
-  def roles
-    @roles
+  def methods
+    @methods ||= {}
   end
-  def interactions
-    @interactions
-  end
+
   def private_interactions
     @private_interactions
   end
 
 
   private
-
+  def get_sexp(b)
+    begin
+      b.to_sexp
+    rescue NoMethodError => e
+      if e.message == 'undefined method `[]\' for nil:NilClass'
+        raise 'It would seem you used a double quote somewhere which is unfortunately not supported'
+      else
+        raise e
+      end
+    end
+  end
   def get_definitions(b)
-    sexp = b.to_sexp
+    sexp = get_sexp b
+
     unless is_definition? sexp[3]
       sexp = sexp[3]
       if sexp
@@ -131,15 +141,16 @@ c = context :Context do
 
     ctx = Context.new name, base_class, default_interaction
     ctx.instance_eval {
-      sexp = block.to_sexp
+      file,_ = block.source_location
+      sexp = get_sexp block
       temp_block = sexp[3]
       i = 0
-
+      raise 'Could not parse \'' + name + '\' try using \'{|| }\' for the context block and \'do\'...\'end\' for the roles'  unless temp_block
       while i < temp_block.length
         exp = temp_block[i]
         unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
           if exp[0] == :defn || exp[0] == :defs
-            add_method(exp)
+            add_method(exp,nil,file)
             temp_block.delete_at i
             i -= 1
           elsif exp[0] == :call && exp[1] == nil && exp[2] == :private
@@ -168,42 +179,36 @@ c = context :Context do
     exp && (exp[0] == :defn || exp[0] == :defs)
   end
 
-  def role(*args, &b)
-    role_name = args[0]
-
-    @defining_role = role_name
-    @roles = {} unless @roles
-    @roles[role_name] = Hash.new
-    if block_given?
+  def role(role_name, &b)
+    file_name,line_no = b.source_location
+    @defining_role = Role.new(role_name, line_no, file_name)
+    methods[role_name] ||= @defining_role
+    if block_given? then
       definitions = get_definitions(b)
-      definitions.each do |exp|
-        add_method(exp)
-      end
+      file,line = b.source_location
+      definitions.each { |exp| add_method(exp,nil , file) }
     end
-
   end
 
-  def get_methods(*args, &b)
-    name = args[0]
-    sources = (@defining_role ? (@roles[@defining_role]) : (@interactions))[name]
-    if @defining_role and (not sources) then
-      @roles[@defining_role][name] = []
-    else
-      @private_interactions[name] = true if @private
-      @interactions[name] = []
-    end
-
-  end
-
-  def add_method(definition)
+  def add_method(definition,line_no, file_name)
     name = if definition[1].instance_of? Symbol
              definition[1]
            else
              (definition[1].select { |e| e.instance_of? Symbol }.map { |e| e.to_s }.join('.') + '.' + definition[2].to_s).to_sym
            end
 
-    sources = get_methods(name)
-    (sources << definition)
+    key = @defining_role == nil ? nil : @defining_role.name
+    unless @methods.has_key?(key) then
+      if (@defining_role == nil) then
+        @methods[key] = Role.new(nil, line_no, file_name)
+      else
+        raise 'Undefined role ' + @defining_role.name.to_s
+      end
+    end
+    @methods[key].methods[name] = definition
+    if @defining_role == nil && @private
+      @private_interactions[name] = true
+    end
   end
 
   def private
@@ -211,8 +216,7 @@ c = context :Context do
   end
 
   def initialize(name,base_class,default_interaction)
-    @roles = {}
-    @interactions = {}
+    @methods = {}
     @private_interactions = {}
     @role_alias = {}
     @name = name
@@ -228,7 +232,6 @@ end
 
 if c.instance_of? String
   file_name = './generated/Context.rb'
-  p "writing to: " + file_name
   File.open(file_name, 'w') do |f|
     f.write(c)
   end

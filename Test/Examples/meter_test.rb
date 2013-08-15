@@ -29,7 +29,7 @@ context :Meter do
   end
   def print_route
     route.each_point { |x, y|
-      p x.to_s + ' ' + y.to_s
+      p x.to_s + ' '  + y.to_s
     }
   end
 end
@@ -46,7 +46,7 @@ class Clock
   end
 end
 
-context :Route do
+context(:Route) {
   role :prices do
   end
   role :payable_position do
@@ -83,7 +83,7 @@ context :Route do
     @prices = prices
     @road_types = road_types
   end
-end
+}
 
 class Road_types
   def initialize
@@ -135,5 +135,21 @@ class MeterTest < Test::Unit::TestCase
     meter = Meter.new(TestClock.new(100),Position.new(0,0,0))
     price = meter.current_total Position.new(10,4,5)
     assert_equal(19,price.to_i)
+  end
+
+  def inter()
+    begin @sum = 0
+    [1, 2].each do |p|   temp____role_name = @role_name
+    @role_name = p
+    self_role_name_sum
+    @role_name = temp____role_name end
+    @sum
+    rescue NoMethodError => e
+      backtrace = e.backtrace
+      last = backtrace[0]
+      last["(eval)"] = ''
+      backtrace[0] = last
+      e.set_backtrace = backtrace
+    end
   end
 end
