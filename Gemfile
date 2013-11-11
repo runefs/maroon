@@ -5,5 +5,7 @@ gemspec
 
 group :development, :test do
   gem 'rake'
-  gem 'debugger'
+  gem 'minitest', '>= 5.0.0'
+  gem 'debugger', :platforms => :ruby_19
+  gem 'byebug', :platforms => :ruby_20
 end

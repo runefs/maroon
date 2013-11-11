@@ -145,7 +145,7 @@ rescue NoMethodError => e
       complete = ((((('class ' + name) + (@base_class ? (('<< ' + @base_class.name)) : (''))) + '
       ') + code.to_s) + '
            end')
-      File.open((((('./' + file_path.to_s) + '/') + name) + '.rb'), 'w') do |f|
+      File.open((((('./' + file_path.to_s) + '/') + name.underscore) + '.rb'), 'w') do |f|
         f.write(complete)
       end
       complete

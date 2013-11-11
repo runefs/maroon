@@ -145,15 +145,17 @@ c = context :Context do
       sexp = get_sexp block
       temp_block = sexp[3]
       i = 0
-      raise 'Could not parse \'' + name + '\' try using \'{|| }\' for the context block and \'do\'...\'end\' for the roles'  unless temp_block
+      raise 'Could not parse \'' + name.to_s + '\' try using \'{|| }\' for the context block and \'do\'...\'end\' for the roles'  unless temp_block
       while i < temp_block.length
         exp = temp_block[i]
-        unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
-          if exp[0] == :defn || exp[0] == :defs
+        # conditions changed due to updated format of sexp_processor gem used at sourcify 0.6.0
+        # unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-1] && temp_block[i-1][0] == :args
+        unless temp_block[i-2] && temp_block[i-2][0] == :call && temp_block[i-2][3][0] == :arglist
+          if exp && (exp[0] == :defn || exp[0] == :defs)
             add_method(exp,nil,file)
             temp_block.delete_at i
             i -= 1
-          elsif exp[0] == :call && exp[1] == nil && exp[2] == :private
+          elsif exp && (exp[0] == :call && exp[1] == nil && exp[2] == :private)
             @private = true
           end
         end
@@ -181,6 +183,7 @@ c = context :Context do
 
   def role(role_name, &b)
     file_name,line_no = b.source_location
+
     @defining_role = Role.new(role_name, line_no, file_name)
     methods[role_name] ||= @defining_role
     if block_given? then
@@ -231,7 +234,7 @@ c = context :Context do
 end
 
 if c.instance_of? String
-  file_name = './generated/Context.rb'
+  file_name = './generated/context.rb'
   File.open(file_name, 'w') do |f|
     f.write(c)
   end

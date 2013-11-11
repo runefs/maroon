@@ -1,0 +1,13 @@
+require 'sorcerer'
+require 'sourcify'
+
+require_relative './context'
+require_relative './immutable_stack'
+require_relative './immutable_queue'
+require_relative './interpretation_context'
+require_relative './tokens'
+require_relative './utilities'
+require_relative './abstract_syntax_tree'
+require_relative './ast_rewritter'
+require_relative './transformer'
+require_relative './dependency_graph'
