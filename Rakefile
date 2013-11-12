@@ -1,5 +1,6 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
+require 'byebug'
 
 Rake::TestTask.new do |t|
   t.libs << 'test'
@@ -37,7 +38,7 @@ task :build_generate do |t|
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 
-# task :default => [:generate,:test]
-task :default => [:generate]
+task :default => [:generate,:test]
+# task :default => [:test]
 
 task :build_lib => [:build_lib_setup,:test]

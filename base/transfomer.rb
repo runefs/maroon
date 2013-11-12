@@ -1,5 +1,6 @@
+
 Context::generate_dependency_graph = {}
-ctx = context(:Transformer) {||
+c = context(:Transformer) {||
   def initialize(context_name, definitions,private_interactions, base_class,default_interaction)
     raise 'No method definitions to transform' if definitions.length == 0
     @context_name = context_name
@@ -144,7 +145,8 @@ rescue NoMethodError => e
       name = context_name.to_s
       complete = ((((('class ' + name) + (@base_class ? (('<< ' + @base_class.name)) : (''))) + '
       ') + code.to_s) + '
-           end')
+           end')       
+    
       File.open((((('./' + file_path.to_s) + '/') + name.underscore) + '.rb'), 'w') do |f|
         f.write(complete)
       end
@@ -185,4 +187,15 @@ end')
   end
 }
 
-p ctx.dependencies.to_dot
+# p ctx.dependencies.to_dot
+# 
+# context_class_code = c.generated_class
+# 
+# if context_class_code.instance_of? String
+#   file_name = './generated/transformer.rb'
+#   p "writing to: " + file_name
+#   File.open(file_name, 'w') do |f|
+#     f.write(context_class_code)
+#   end
+# end
+# 

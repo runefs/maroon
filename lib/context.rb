@@ -12,8 +12,8 @@ class Context
     if self.generate_dependency_graph then
       dependencies = {}
       ctx.dependencies = DependencyGraphModel.new(DependencyGraph.new(name, ctx.methods, dependencies).create!)
-    end
-    transformer = Transformer.new(name, ctx.methods, ctx.private_interactions, base_class, default_interaction)
+    end    
+    transformer = Transformer.new(name, ctx.methods, ctx.private_interactions, base_class, default_interaction)    
     ctx.generated_class = transformer.transform(generate_files_in, @with_contracts)
     ctx
   end
@@ -100,9 +100,6 @@ class Context
       unless temp_block then
         raise((("Could not parse '" + name.to_s) + "' try using '{|| }' for the context block and 'do'...'end' for the roles"))
       end
-      
-      # byebug      
-      
       while (i < temp_block.length) do
         exp = temp_block[i]
 
@@ -168,9 +165,7 @@ class Context
       end
     end
     @methods[key].methods[name] = definition
-    @private_interactions[name] = true if (@defining_role == nil) and @private
-    
-    # byebug
+    @private_interactions[name] = true if (@defining_role == nil) and @private    
   end
 
   def private()

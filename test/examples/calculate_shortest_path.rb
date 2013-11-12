@@ -92,10 +92,8 @@ Context.define :CalculateShortestPath do
       selection = nil
       @unvisited.each_key {
           |intersection|
-        # bind :intersection => :distance_labeled_graph_node
-        # TODO Fix as bind is fixed
-        @distance_labeled_graph_node = intersection # temporary fix until bind is fixed
-        
+        bind :intersection => :distance_labeled_graph_node
+
         if @unvisited[distance_labeled_graph_node]
           tentative_distance = distance_labeled_graph_node.tentative_distance
           if tentative_distance < min
@@ -183,10 +181,7 @@ Context.define :CalculateShortestPath do
     if unvisited_neighbors != nil
       unvisited_neighbors.each {
           |neighbor|
-        # bind :neighbor => :neighbor_node
-        # TODO Fix neighbor binding after bind is fixed in context_test
-        @neighbor_node = neighbor # temporary fix of bind
-        
+        bind :neighbor => :neighbor_node        
         tentative_distance = current.tentative_distance
         raise 'tentative distance cannot be nil' if tentative_distance == nil
         distance_between = map.distance_between(current, neighbor)
@@ -238,10 +233,7 @@ Context.define :CalculateShortestPath do
           map.nodes.each { |node| @unvisited[node] = true }
           @unvisited.delete(map.origin)
           map.nodes.each { |node| 
-            # bind :node => :distance_labeled_graph_node
-            # TODO Fix as bind is fixed
-            @distance_labeled_graph_node = node # temporary bind fix
-            
+            bind :node => :distance_labeled_graph_node
             distance_labeled_graph_node.set_tentative_distance_to(infinity) }
           tentative_distance_values[map.origin] = 0
 
@@ -284,10 +276,7 @@ Context.define :CalculateShortestPath do
       @unvisited.delete(map.origin)
 
       map.nodes.each { |node|
-        # bind :node => :distance_labeled_graph_node
-        # TODO Fix as bind is fixed
-        @distance_labeled_graph_node = node # temporary fix until bind is fixed
-        
+        bind :node => :distance_labeled_graph_node
         distance_labeled_graph_node.set_tentative_distance_to(infinity)
       }
       tentative_distance_values[map.origin] = 0

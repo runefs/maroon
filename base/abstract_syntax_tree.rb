@@ -1,4 +1,4 @@
-context :AbstractSyntaxTree do
+c = context :AbstractSyntaxTree do
   role :interpretation_context do
   end
   role :queue do
@@ -42,11 +42,7 @@ context :AbstractSyntaxTree do
           bind = AbstractSyntaxTree.new(exp, @interpretation_context)
           if (bind.type == Tokens.call) and (bind.data == [:bind])
             aliases = {}
-            # list = exp.last[(1..-1)] 
-            # sourcify 0.5.0 returns s(s(:lit, :p), s(:lit, :role_name))
-            # while sourcify 0.6.0 returns s(s(:hash, s(:lit, :p), s(:lit, :role_name)))
-            list = exp.last[(1..-1)].value[(1..-1)] # compatible with sourcify 0.6.0
-
+            list = exp.last[(1..-1)].value[(1..-1)]
             (list.length/2).times{|i|
               local = list[i*2].last
               role_name = list[i*2+1].last
@@ -178,3 +174,13 @@ context :AbstractSyntaxTree do
   end
 
 end
+# 
+# context_class_code = c.generated_class
+# 
+# if context_class_code.instance_of? String
+#   file_name = './generated/abstract_syntax_tree.rb'
+#   p "writing to: " + file_name
+#   File.open(file_name, 'w') do |f|
+#     f.write(context_class_code)
+#   end
+# end

@@ -1,4 +1,4 @@
-context :AstRewritter do
+c = context :AstRewritter do
   role :ast do
   end
 
@@ -72,3 +72,13 @@ context :AstRewritter do
   end
 
 end
+
+# context_class_code = c.generated_class
+# 
+# if context_class_code.instance_of? String
+#   file_name = './generated/ast_rewritter.rb'
+#   p "writing to: " + file_name
+#   File.open(file_name, 'w') do |f|
+#     f.write(context_class_code)
+#   end
+# end

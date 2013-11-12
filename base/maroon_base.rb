@@ -35,8 +35,6 @@
 ##
 c = context :Context do
 
-
-
   def self.define(*args, &block)
     name, base_class, default_interaction = *args
 
@@ -233,9 +231,12 @@ c = context :Context do
 
 end
 
-if c.instance_of? String
+context_class_code = c.generated_class
+
+if context_class_code.instance_of? String
   file_name = './generated/context.rb'
+  p "writing to: " + file_name
   File.open(file_name, 'w') do |f|
-    f.write(c)
+    f.write(context_class_code)
   end
 end

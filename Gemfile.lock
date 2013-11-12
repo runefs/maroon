@@ -44,4 +44,4 @@ DEPENDENCIES
   debugger
   maroon!
   minitest (>= 5.0.0)
-  rake
+  rake (>= 10.0.0)

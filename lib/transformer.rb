@@ -16,7 +16,7 @@ class Transformer
       name = context_name.to_s
       complete = ((((("class " + name) + (@base_class ? (("<< " + @base_class.name)) : (""))) + "\n      ") + code.to_s) + "\n           end")
       File.open((((("./" + file_path.to_s) + "/") + name.underscore) + ".rb"), "w") do |f|
-        # f.write(complete)
+        f.write(complete)
       end
       complete
     else
