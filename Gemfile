@@ -4,6 +4,8 @@ source 'http://rubygems.org'
 gemspec
 
 group :development, :test do
-  gem 'rake'
-  gem 'debugger'
+  gem 'rake',  '>= 10.0.0'
+  gem 'minitest', '>= 5.0.0'
+  gem 'debugger', :platforms => :ruby_19
+  gem 'byebug', :platforms => :ruby_20
 end

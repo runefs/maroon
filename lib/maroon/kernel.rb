@@ -1,4 +1,4 @@
-require_relative '../Context'
+require_relative '../context'
 
 unless Kernel::methods.detect { |m| m== :context }
   def context(*args, &b)

@@ -1,4 +1,4 @@
-context :DependencyGraph do
+c = context :DependencyGraph do
 
   def initialize(context_name, methods, dependencies)
     @context_name = context_name
@@ -48,7 +48,9 @@ context :DependencyGraph do
     end
 
     def ast
-      AbstractSyntaxTree.new(method.body, InterpretationContext.new(methods,{},{},Role.new(role_name,__LINE__,__FILE__),{}))
+      AbstractSyntaxTree.new(method.body, InterpretationContext.new(methods,{},{},Role.new(role_name,__LINE__,__FILE__),Hash.new))
+      #TODO fix error with Ruby2Ruby conversion (in transformer) of empty hash as last argument
+      # def String.new(:abba, {}) end #=> "def\n String.new(:abba, )\n end"
     end
     def definition
       (method.instance_of? Array) ? method[0] : method
@@ -76,7 +78,14 @@ context :DependencyGraph do
     methods.dependencies
     dependencies
   end
-
-
 end
 
+# context_class_code = c.generated_class
+# 
+# if context_class_code.instance_of? String
+#   file_name = './generated/dependency_graph.rb'
+#   p "writing to: " + file_name
+#   File.open(file_name, 'w') do |f|
+#     f.write(context_class_code)
+#   end
+# end

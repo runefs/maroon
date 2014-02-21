@@ -1,5 +1,6 @@
-require "bundler/gem_tasks"
+require 'bundler/gem_tasks'
 require 'rake/testtask'
+require 'byebug'
 
 Rake::TestTask.new do |t|
   t.libs << 'test'
@@ -9,9 +10,9 @@ end
 
 task :generate do |t|
 
-  require_relative './lib/Context'
+  require_relative './lib/maroon' #use the one in lib. That should be the stable one
   require_relative './lib/maroon/kernel'
-  require_relative './lib/build' #use the one in lib. That should be the stable one
+  # require_relative './lib/build' #use the one in lib. That should be the stable one
   Context::generate_files_in=:generated #generate files not just in memory classes
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
@@ -32,11 +33,12 @@ task :build_lib_setup do |t|
 end
 
 task :build_generate do |t|
-  require_relative './generated/build' #use the one previously generated
+  require_relative './generated/maroon' #use the one previously generated
   Context::generate_files_in('lib') #generate files
   `git ls-files ./base/`.split($/).grep(%r{(.)*.rb}).select {|f| require_relative("#{f}")}
 end
 
 task :default => [:generate,:test]
+# task :default => [:test]
 
 task :build_lib => [:build_lib_setup,:test]
